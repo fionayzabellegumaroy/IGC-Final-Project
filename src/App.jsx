@@ -1,18 +1,11 @@
 import './App.css';
-import './generateMaze.js';
+import MazeGame from './MazeGame';
 
 function App() {
-
   return (
     <>
-      <div>
-        <canvas>
-
-        </canvas>
-      </div>
-      <p className="read-the-docs">
-        Escape the Maze
-      </p>
+      <h1>Escape the Maze</h1>
+      <MazeGame />
     </>
   )
 }

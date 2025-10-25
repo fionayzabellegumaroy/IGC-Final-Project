@@ -1,3 +1,3 @@
-export { createCamera } from './camera.js';
-export { createCube } from './cube.js';
-export { createScene } from './scene.js';
+export * from './camera.js';
+export * from './wall.js';
+export * from './scene.js';

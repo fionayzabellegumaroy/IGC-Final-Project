@@ -1,15 +1,8 @@
 import { PerspectiveCamera } from 'three';
 
 function createCamera() {
-  const camera = new PerspectiveCamera(
-    75,                                   // fov (field of view)
-    window.innerWidth / window.innerHeight, // aspect ratio
-    0.1,                                  // near clipping plane
-    1000                                  // far clipping plane
-  );
-
-  camera.position.z = 5; // Move camera back so we can see the cube
-
+  //arbitrary values
+  const camera = new PerspectiveCamera(60, 1, 0.1, 100);
   return camera;
 }
 

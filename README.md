@@ -5,3 +5,8 @@ The player will navigate through the maze to find the exit, with a win screen up
 
 This will be written in WebGL. 
 
+
+# To Run
+npm install
+npm run build
+npm run dev

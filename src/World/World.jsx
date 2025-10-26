@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { DirectionalLight, AmbientLight, Color, HemisphereLight } from "three";
-import { createCamera, createScene, createWall, ground } from "../components";
+import { createCamera, createScene, createWall, endBlock, ground, startBlock } from "../components";
 // import { Resizer } from "../systems/Resizer.js";
 import { maze, startPosition, endPosition } from "../core";
 import { createRenderer, Loop, setupControls } from "../systems";
@@ -74,7 +74,7 @@ class World {
       0.6
     );
 
-    this.scene.add(ambientLight, directionalLight, ground(), hemiLight);
+    this.scene.add(ambientLight, directionalLight, endBlock(), ground(), hemiLight, startBlock());
 
     // this.resizer = new Resizer(container, this.camera, this.renderer);
 

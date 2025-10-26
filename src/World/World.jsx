@@ -1,12 +1,11 @@
 import React, { useEffect, useRef } from "react";
-import { DirectionalLight, AmbientLight, Color } from "three";
-import { createCamera, createScene, createWall } from "../components";
+import { DirectionalLight, AmbientLight, Color, HemisphereLight } from "three";
+import { createCamera, createScene, createWall, ground } from "../components";
 // import { Resizer } from "../systems/Resizer.js";
 import { maze, startPosition, endPosition } from "../core";
 import { createRenderer, Loop, setupControls } from "../systems";
 
 class World {
-
   //synchronous set
   constructor(container) {
     this.camera = createCamera();
@@ -29,10 +28,11 @@ class World {
     this.camera.updateProjectionMatrix();
 
     // loop manager if needed elsewhere
-   this.loop = new Loop(this.camera, this.scene, this.renderer);
-  
+    this.loop = new Loop(this.camera, this.scene, this.renderer);
+
     // hook up controls handling to the loop
-    this.loop.onRender = () => { // makes onRender truthy
+    this.loop.onRender = () => {
+      // makes onRender truthy
       this.handleControls();
     };
 
@@ -64,18 +64,21 @@ class World {
       startPosition[1] * cell_size
     );
 
-    // add lighting
-    let light = new DirectionalLight(0xffffff, 1);
-    light.position.set(5, 5, 5);
-
-    //add later loop.updatables.push(some thing);
-
-    this.scene.add(light);
-
+    // add lighting maybe to a different file later
+    let directionalLight = new DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(5, 5, 5);
     let ambientLight = new AmbientLight(0xffffff, 0.3);
-    this.scene.add(ambientLight);
+    let hemiLight = new HemisphereLight(
+      0x87ceeb, // sky color
+      0x654321, // ground color (brown)
+      0.6
+    );
+
+    this.scene.add(ambientLight, directionalLight, ground(), hemiLight);
 
     // this.resizer = new Resizer(container, this.camera, this.renderer);
+
+    //add later loop.updatables.push(some thing);
 
     // add walls
     for (let i = 0; i < maze.length; i++) {
@@ -111,9 +114,9 @@ class World {
 }
 
 export let ThreeJsWorld = () => {
-  let containerRef = useRef(null); // holds the DOM node where we mount the canvas  
+  let containerRef = useRef(null); // holds the DOM node where we mount the canvas
   let worldRef = useRef(null); // stores the World instance
- 
+
   useEffect(() => {
     if (!containerRef.current) return;
 

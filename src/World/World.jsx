@@ -1,44 +1,91 @@
-//in world.js
-
-//1. import
 import React, { useEffect, useRef } from "react";
 import { DirectionalLight, AmbientLight, Color } from "three";
-import { createCamera } from "../components/camera.js";
-import { createCube } from "../components/cube.js";
-import { createScene } from "../components/scene.js";
-
-import { createRenderer } from "../systems/renderer.js";
+import { createCamera, createScene, createWall } from "../components";
 // import { Resizer } from "../systems/Resizer.js";
+import { maze, startPosition, endPosition } from "../core";
+import { createRenderer, Loop, setupControls } from "../systems";
 
 class World {
+
   //synchronous set
   constructor(container) {
     this.camera = createCamera();
     this.scene = createScene();
-    this.renderer = createRenderer();
+    this.renderer = createRenderer(); // creates a canvas element
 
-    container.appendChild(this.renderer.domElement);
+    let { controls, keys } = setupControls(this.camera, document.body);
+    this.controls = controls;
+    this.keys = keys;
 
-    this.scene.background = new Color(0x87CEEB); // Sky blue
+    container.appendChild(this.renderer.domElement); // makes canvas visible and World attaches Three.js to div
 
-    const width = container.clientWidth;
-    const height = container.clientHeight;
+    this.scene.background = new Color(0x87ceeb); // sky blue
+
+    // finds the width and height for camera settings
+    let width = container.clientWidth;
+    let height = container.clientHeight;
     this.renderer.setSize(width, height);
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
 
-    // Add lighting
-    const light = new DirectionalLight(0xffffff, 1);
+    // loop manager if needed elsewhere
+   this.loop = new Loop(this.camera, this.scene, this.renderer);
+  
+    // hook up controls handling to the loop
+    this.loop.onRender = () => { // makes onRender truthy
+      this.handleControls();
+    };
+
+    let cell_size = 2; // what is set in wall.js
+
+    console.log("start position: ", startPosition);
+
+    // calculate maze start using mazeGeneration info
+    // let mazeWidth = e;
+    // let mazeDepth = startPosition[1].length * cell_size;
+    // //  let mazeWidth = maze[0].length * cell_size;
+    // // let mazeDepth = maze[1].length * cell_size;
+    // let centerX = mazeWidth / 2;
+    // let centerZ = mazeDepth / 2;
+
+    // // // Position camera to see the whole maze on first load (overview)
+    // this.camera.position.set(
+    //   (startPosition[0].length * cell_size) / 2, // center horizontally
+    //   15,      // height above maze
+    //   (startPosition[1].length * cell_size)/2 + 10 // slight offset so we aren't directly above center
+    // );
+    // // Point camera at the center of the maze
+    // this.camera.lookAt(centerX, 0, centerZ);
+
+    // //this is first person POV
+    this.camera.position.set(
+      startPosition[0] * cell_size, // Starting position in maze
+      1.6, // Eye height
+      startPosition[1] * cell_size
+    );
+
+    // add lighting
+    let light = new DirectionalLight(0xffffff, 1);
     light.position.set(5, 5, 5);
+
+    //add later loop.updatables.push(some thing);
+
     this.scene.add(light);
 
-    const ambientLight = new AmbientLight(0xffffff, 0.3);
+    let ambientLight = new AmbientLight(0xffffff, 0.3);
     this.scene.add(ambientLight);
 
-    this.cube = createCube();
-    this.scene.add(this.cube);
-
     // this.resizer = new Resizer(container, this.camera, this.renderer);
+
+    // add walls
+    for (let i = 0; i < maze.length; i++) {
+      for (let j = 0; j < maze[i].length; j++) {
+        if (maze[i][j] === 1) {
+          let wall = createWall(i, j);
+          this.scene.add(wall);
+        }
+      }
+    }
 
     // async init() {
     //     // asynchronous setup here
@@ -46,8 +93,16 @@ class World {
     // }
   }
 
-  render() {
-    this.renderer.render(this.scene, this.camera);
+  handleControls() {
+    if (this.controls && this.controls.isLocked && this.keys) {
+      const moveSpeed = 5.0;
+      const delta = 0.016; // roughly 60fps
+
+      if (this.keys.w) this.controls.moveForward(moveSpeed * delta);
+      if (this.keys.s) this.controls.moveForward(-moveSpeed * delta);
+      if (this.keys.a) this.controls.moveRight(-moveSpeed * delta);
+      if (this.keys.d) this.controls.moveRight(moveSpeed * delta);
+    }
   }
 
   dispose() {
@@ -55,40 +110,36 @@ class World {
   }
 }
 
-export const ThreeJsWorld = () => {
-  const containerRef = useRef(null);
-  const worldRef = useRef(null);
-  const frameRef = useRef(null);
-
+export let ThreeJsWorld = () => {
+  let containerRef = useRef(null); // holds the DOM node where we mount the canvas  
+  let worldRef = useRef(null); // stores the World instance
+ 
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Initialize World
-    worldRef.current = new World(containerRef.current);
+    // initialize world
+    worldRef.current = new World(containerRef.current); // World now has handle to actual div
 
-    // Animation loop
-    const animate = () => {
-      worldRef.current.render();
-      frameRef.current = requestAnimationFrame(animate);
-    };
-    animate();
+    // start the Loop system
+    worldRef.current.loop.start();
 
-    // Cleanup
+    // cleanup function
     return () => {
-      if (frameRef.current) {
-        cancelAnimationFrame(frameRef.current);
-      }
       if (worldRef.current) {
+        worldRef.current.loop.stop();
         worldRef.current.dispose();
       }
     };
-  }, []);
-
+  }, []); // empty dependency array ensures this runs once on mount and cleans up on unmount
 
   return (
     <>
       <div className="w-full h-screen">
-        <div ref={containerRef} className="fullscreen" style={{ margin: 0, padding: 0, overflow: 'hidden' }} />
+        <div
+          ref={containerRef} // JSX renders div and after first mount, React assigns real DOM node to containerRef.current
+          className="fullscreen"
+          style={{ margin: 0, padding: 0, overflow: "hidden" }}
+        />
       </div>
     </>
   );

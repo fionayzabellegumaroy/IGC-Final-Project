@@ -15,8 +15,8 @@ class Loop {
     this.renderer.setAnimationLoop(() => { // start the animation loop
       this.tick(); //update animations
       
-      if (this.onRender) { // call world-specific render logic
-        this.onRender();
+      if (this.onRender) { // call world-specific render logic -> since loop initialized in World, it is truthy
+        this.onRender(); //calls function World assigned (handleControls)
       }
       
       // render a frame

@@ -1,9 +1,31 @@
 import React, { useEffect, useRef } from "react";
-import { DirectionalLight, AmbientLight, Color, HemisphereLight } from "three";
-import { createCamera, createScene, createWall, endBlock, ground, startBlock } from "../components";
+import {
+  DirectionalLight,
+  AmbientLight,
+  Color,
+  HemisphereLight,
+  Vector3,
+  BoxGeometry,
+  MeshBasicMaterial,
+  Mesh,
+  Group,
+} from "three";
+import {
+  createCamera,
+  createScene,
+  createWall,
+  endBlock,
+  ground,
+  startBlock,
+} from "../components";
 // import { Resizer } from "../systems/Resizer.js";
-import { maze, startPosition, endPosition } from "../core";
-import { createRenderer, Loop, setupControls } from "../systems";
+import { checkCollision, maze, startPosition, endPosition } from "../core";
+import {
+  createRenderer,
+  Loop,
+  PlayerMovement,
+  setupControls,
+} from "../systems";
 
 class World {
   //synchronous set
@@ -15,6 +37,27 @@ class World {
     let { controls, keys } = setupControls(this.camera, document.body);
     this.controls = controls;
     this.keys = keys;
+
+    // // In World constructor, right after setting up controls:
+    // this.controls.addEventListener('lock', () => {
+    //   console.log('✅ POINTER LOCKED');
+    // });
+
+    // this.controls.addEventListener('unlock', () => {
+    //   console.log('❌ POINTER UNLOCKED');
+    // });
+
+    // // Also log when click happens
+    // container.addEventListener('click', () => {
+    //   console.log('Canvas clicked, attempting lock...');
+    //   console.log('Controls object:', this.controls);
+    // });
+
+    this.playerMovementInstance = new PlayerMovement(
+      this.camera,
+      this.controls,
+      this.keys
+    );
 
     container.appendChild(this.renderer.domElement); // makes canvas visible and World attaches Three.js to div
 
@@ -32,36 +75,32 @@ class World {
 
     // hook up controls handling to the loop
     this.loop.onRender = () => {
-      // makes onRender truthy
-      this.handleControls();
+      // console.log('onRender called'); // Add this
+      // console.log('playerMovementInstance exists?', !!this.playerMovementInstance);
+      this.playerMovementInstance.update();
     };
 
     let cell_size = 2; // what is set in wall.js
 
     console.log("start position: ", startPosition);
 
-    // calculate maze start using mazeGeneration info
-    // let mazeWidth = e;
-    // let mazeDepth = startPosition[1].length * cell_size;
-    // //  let mazeWidth = maze[0].length * cell_size;
-    // // let mazeDepth = maze[1].length * cell_size;
-    // let centerX = mazeWidth / 2;
-    // let centerZ = mazeDepth / 2;
-
-    // // // Position camera to see the whole maze on first load (overview)
-    // this.camera.position.set(
-    //   (startPosition[0].length * cell_size) / 2, // center horizontally
-    //   15,      // height above maze
-    //   (startPosition[1].length * cell_size)/2 + 10 // slight offset so we aren't directly above center
-    // );
-    // // Point camera at the center of the maze
-    // this.camera.lookAt(centerX, 0, centerZ);
-
-    // //this is first person POV
+    //this is first person POV
     this.camera.position.set(
       startPosition[0] * cell_size, // Starting position in maze
       1.6, // Eye height
       startPosition[1] * cell_size
+    );
+
+    console.log("Camera world position:", this.camera.position);
+    console.log("Camera maze grid position:", {
+      row: Math.floor(this.camera.position.x / 2),
+      col: Math.floor(this.camera.position.z / 2),
+    });
+    console.log(
+      "Maze cell at that position:",
+      maze[Math.floor(this.camera.position.x / 2)]?.[
+        Math.floor(this.camera.position.z / 2)
+      ]
     );
 
     // add lighting maybe to a different file later
@@ -74,7 +113,14 @@ class World {
       0.6
     );
 
-    this.scene.add(ambientLight, directionalLight, endBlock(), ground(), hemiLight, startBlock());
+    this.scene.add(
+      ambientLight,
+      directionalLight,
+      endBlock(),
+      ground(),
+      hemiLight,
+      startBlock()
+    );
 
     // this.resizer = new Resizer(container, this.camera, this.renderer);
 
@@ -94,18 +140,6 @@ class World {
     //     // asynchronous setup here
     //     // load bird models
     // }
-  }
-
-  handleControls() {
-    if (this.controls && this.controls.isLocked && this.keys) {
-      const moveSpeed = 5.0;
-      const delta = 0.016; // roughly 60fps
-
-      if (this.keys.w) this.controls.moveForward(moveSpeed * delta);
-      if (this.keys.s) this.controls.moveForward(-moveSpeed * delta);
-      if (this.keys.a) this.controls.moveRight(-moveSpeed * delta);
-      if (this.keys.d) this.controls.moveRight(moveSpeed * delta);
-    }
   }
 
   dispose() {

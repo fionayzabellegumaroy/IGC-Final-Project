@@ -38,21 +38,6 @@ class World {
     this.controls = controls;
     this.keys = keys;
 
-    // // In World constructor, right after setting up controls:
-    // this.controls.addEventListener('lock', () => {
-    //   console.log('✅ POINTER LOCKED');
-    // });
-
-    // this.controls.addEventListener('unlock', () => {
-    //   console.log('❌ POINTER UNLOCKED');
-    // });
-
-    // // Also log when click happens
-    // container.addEventListener('click', () => {
-    //   console.log('Canvas clicked, attempting lock...');
-    //   console.log('Controls object:', this.controls);
-    // });
-
     this.playerMovementInstance = new PlayerMovement(
       this.camera,
       this.controls,
@@ -75,32 +60,16 @@ class World {
 
     // hook up controls handling to the loop
     this.loop.onRender = () => {
-      // console.log('onRender called'); // Add this
-      // console.log('playerMovementInstance exists?', !!this.playerMovementInstance);
       this.playerMovementInstance.update();
     };
 
-    let cell_size = 2; // what is set in wall.js
-
-    console.log("start position: ", startPosition);
+    let cell_size = 5; // what is set in wall.js
 
     //this is first person POV
     this.camera.position.set(
-      startPosition[0] * cell_size, // Starting position in maze
+      startPosition[0] * cell_size + cell_size / 2, // Starting position in maze
       1.6, // Eye height
-      startPosition[1] * cell_size
-    );
-
-    console.log("Camera world position:", this.camera.position);
-    console.log("Camera maze grid position:", {
-      row: Math.floor(this.camera.position.x / 2),
-      col: Math.floor(this.camera.position.z / 2),
-    });
-    console.log(
-      "Maze cell at that position:",
-      maze[Math.floor(this.camera.position.x / 2)]?.[
-        Math.floor(this.camera.position.z / 2)
-      ]
+      startPosition[1] * cell_size + cell_size / 2
     );
 
     // add lighting maybe to a different file later

@@ -34,9 +34,10 @@ class World {
     this.scene = createScene();
     this.renderer = createRenderer(); // creates a canvas element
 
-    let { controls, keys } = setupControls(this.camera, document.body);
-    this.controls = controls;
-    this.keys = keys;
+  let { controls, keys, dispose } = setupControls(this.camera, document.body);
+  this.controls = controls;
+  this.keys = keys;
+  this.controlsDispose = dispose;
 
     this.playerMovementInstance = new PlayerMovement(
       this.camera,
@@ -112,6 +113,16 @@ class World {
   }
 
   dispose() {
+    // cleanup control listeners
+    if (this.controlsDispose) {
+      try {
+        this.controlsDispose();
+      } catch (e) {
+        // ignore errors during cleanup
+      }
+      this.controlsDispose = null;
+    }
+
     this.renderer.dispose();
   }
 }

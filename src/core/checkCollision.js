@@ -1,6 +1,6 @@
 import { Vector3 } from "three";
 
-export function checkCollision(currentPosition, movementVector, maze, cellSize = 2, padding = 0.02) {
+export function checkCollision(currentPosition, movementVector, maze, cellSize = 5, padding = 0.5) {
   // compute candidate next position
   const nextX = currentPosition.x + movementVector.x;
   const nextZ = currentPosition.z + movementVector.z;
@@ -21,15 +21,12 @@ export function checkCollision(currentPosition, movementVector, maze, cellSize =
     for (let c = minCol; c <= maxCol; c++) {
       if (r < 0 || r >= maze.length || c < 0 || c >= maze[0].length) {
         // out-of-bounds — treat as collision so player can't walk off the maze
-        // console.log("out of bounds collision");
         return true;
       }
       if (maze[r][c] === 1) {
-        // console.log("collision at maze cell:", r, c);
         return true;
       }
     }
   }
-//   console.log("no collision");
   return false;
 }

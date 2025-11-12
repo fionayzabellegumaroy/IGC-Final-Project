@@ -6,74 +6,42 @@ export class PlayerMovement {
     this.camera = camera;
     this.controls = controls;
     this.keys = keys;
-    this.moveSpeed = 5.0;
+    this.moveSpeed = 8.0;
     this.delta = 0.016;
     this.collisionEnabledFn = collisionEnabledFn;
   }
 
   update() {
-    // Debug: check if this is being called
-    // console.log('UPDATE METHOD ENTERED'); // Very first line
-    // console.log('=== UPDATE DEBUG ===');
-    // console.log('this.controls:', this.controls);
-    console.log("this.controls.isLocked:", this.controls?.isLocked);
-    // console.log('this.keys:', this.keys);
-
     if (!this.controls || !this.controls.isLocked || !this.keys) return;
 
     const step = this.moveSpeed * this.delta;
 
     if (this.keys.w) {
-      console.log("W pressed, moving forward");
       this.moveForward(step);
     }
     if (this.keys.s) {
-      console.log("S pressed, moving backward");
       this.moveForward(-step);
     }
     if (this.keys.d) {
-      console.log("D pressed, moving right");
       this.moveRight(step);
     }
     if (this.keys.a) {
-      console.log("A pressed, moving left");
       this.moveRight(-step);
     }
   }
 
   moveForward(distance) {
-    const direction = new Vector3();
-    this.camera.getWorldDirection(direction);
-    direction.y = 0;
+    const direction = new Vector3(); // creates a new vector
+    this.camera.getWorldDirection(direction); // fils direction with the diretion camera is looking at
+    direction.y = 0; // zeroing y component removes vertical part so movement is confined to the x/z plane since this is first-person
     direction.normalize();
 
-    const moveVec = direction.multiplyScalar(distance);
+    const moveVec = direction.multiplyScalar(distance); // displacement vector of what you want to add to the camera pos.
 
-    console.log("Direction:", direction);
-    console.log("MoveVec:", moveVec);
-    console.log("Target position would be:", {
-      x: this.camera.position.x + moveVec.x,
-      z: this.camera.position.z + moveVec.z,
-    });
-
-    const collisionEnabled =
-      typeof this.collisionEnabledFn === "function"
-        ? this.collisionEnabledFn()
-        : true;
     const hasCollision = checkCollision(this.camera.position, moveVec, maze);
 
-    console.log(
-      "Move forward - collision:",
-      hasCollision,
-      "position before:",
-      this.camera.position.clone()
-    );
-
-    if (!collisionEnabled || !hasCollision) {
+    if (!hasCollision) {
       this.camera.position.add(moveVec);
-      console.log("Position after:", this.camera.position.clone());
-    } else {
-      console.log("Movement blocked by collision");
     }
   }
 
@@ -87,18 +55,10 @@ export class PlayerMovement {
 
     const moveVec = right.multiplyScalar(distance);
 
-    const collisionEnabled =
-      typeof this.collisionEnabledFn === "function"
-        ? this.collisionEnabledFn()
-        : true;
     const hasCollision = checkCollision(this.camera.position, moveVec, maze);
 
-    console.log("Move right - collision:", hasCollision);
-
-    if (!collisionEnabled || !hasCollision) {
-    this.camera.position.add(moveVec);
-    } else {
-      console.log('Movement blocked by collision');
-    }
+    if (!hasCollision) {
+      this.camera.position.add(moveVec);
+    } 
   }
 }

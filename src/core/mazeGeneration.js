@@ -115,6 +115,5 @@ function printMaze(maze) {
 }
 
 // generate and print a 5x5 maze [for now]
-let { maze, startPosition, endPosition } = generateMazePrims(5, 5);
+let { maze, startPosition, endPosition } = generateMazePrims(15, 15);
 export { maze, startPosition, endPosition };
-console.log(printMaze(maze));

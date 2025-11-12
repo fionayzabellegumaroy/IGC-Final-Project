@@ -13,9 +13,9 @@ const startBlock = () => {
   );
 
   geometry.position.set(
-    startPosition[0] * cell_size + 1.5, //divide by 2 to center Plane Geometry [it starts with being at [-some number, some number] instead of [0,0]
+    startPosition[0] * cell_size + cell_size / 2, //divide by 2 to center Plane Geometry [it starts with being at [-some number, some number] instead of [0,0]
     0,
-    startPosition[1] * cell_size + 1.5
+    startPosition[1] * cell_size + cell_size / 2
   );
   return geometry;
 };

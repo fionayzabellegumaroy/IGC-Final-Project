@@ -25,6 +25,7 @@ function getWallMaterial() {
       map: cachedTexture,
     });
 
+    cachedMaterial.receiveShadow = true;
   }
   
   return cachedMaterial;
@@ -40,6 +41,12 @@ export function createWall(gridX, gridZ) {
     CELL_SIZE / 2,
     gridZ * CELL_SIZE + CELL_SIZE / 2
   );
+
+  wall.userData = { 
+    type: 'wall', 
+    gridX: gridX, 
+    gridZ: gridZ 
+  };
   
   return wall;
 }

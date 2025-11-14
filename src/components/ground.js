@@ -13,7 +13,7 @@ const ground = () => {
   });
 
   let ground = new Mesh(groundGeometry, groundMaterial);
-  
+  ground.receiveShadow = true;  
   ground.rotation.x = -Math.PI / 2; // rotate to be horizontal
 
   ground.position.set(

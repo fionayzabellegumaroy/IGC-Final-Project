@@ -1,8 +1,8 @@
-import { PerspectiveCamera } from 'three';
+import { PerspectiveCamera } from "three";
 
 function createCamera() {
   //arbitrary values
-  const camera = new PerspectiveCamera(60, 1, 0.1, 100);
+  const camera = new PerspectiveCamera(70, 1, 0.1, 100);
   return camera;
 }
 

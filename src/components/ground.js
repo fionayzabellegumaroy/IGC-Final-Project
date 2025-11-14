@@ -1,4 +1,4 @@
-import { PlaneGeometry, Mesh, MeshStandardMaterial } from "three";
+import { PlaneGeometry, Mesh, MeshLambertMaterial } from "three";
 import { maze, startPosition, endPosition } from "../core";
 
 const ground = () => {
@@ -8,13 +8,12 @@ const ground = () => {
     maze.length * cell_size
   );
 
-  let groundMaterial = new MeshStandardMaterial({
+  let groundMaterial = new MeshLambertMaterial({
     color: 0x808080,
-    roughness: 2,
-    metalness: 0.2,
   });
 
   let ground = new Mesh(groundGeometry, groundMaterial);
+  
   ground.rotation.x = -Math.PI / 2; // rotate to be horizontal
 
   ground.position.set(

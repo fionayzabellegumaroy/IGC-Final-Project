@@ -1,16 +1,43 @@
 import * as THREE from 'three';
+import { MeshLambertMaterial } from 'three';
+import atlasUrl from '../assets/textures/brick-texture.png';
 
 let CELL_SIZE = 5;
+let cachedTexture = null;
+let cachedMaterial = null;
+
+function getWallMaterial() {
+  if (!cachedMaterial) {
+    const loader = new THREE.TextureLoader();
+    cachedTexture = loader.load(atlasUrl);
+    
+    cachedTexture.magFilter = THREE.NearestFilter;
+    cachedTexture.minFilter = THREE.NearestFilter;
+    cachedTexture.wrapS = THREE.RepeatWrapping;
+    cachedTexture.wrapT = THREE.RepeatWrapping;
+    
+    cachedTexture.colorSpace = THREE.SRGBColorSpace; 
+    
+    cachedTexture.flipY = false; // force texture to not be processed/gamma corrected
+
+    
+    cachedMaterial = new MeshLambertMaterial({ 
+      map: cachedTexture,
+    });
+
+  }
+  
+  return cachedMaterial;
+}
 
 export function createWall(gridX, gridZ) {
-  let wall = new THREE.Mesh(
-    new THREE.BoxGeometry(CELL_SIZE, 20, CELL_SIZE), //make it a cube wall
-    new THREE.MeshStandardMaterial({ color: 0x888888 }) // temporary make it gray
-  );
+  const geometry = new THREE.BoxGeometry(CELL_SIZE, CELL_SIZE, CELL_SIZE);
+  const material = getWallMaterial();
+  const wall = new THREE.Mesh(geometry, material);
   
   wall.position.set(
-    gridX * CELL_SIZE + CELL_SIZE/ 2,
-    10,
+    gridX * CELL_SIZE + CELL_SIZE / 2,
+    CELL_SIZE / 2,
     gridZ * CELL_SIZE + CELL_SIZE / 2
   );
   

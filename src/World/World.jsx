@@ -1,16 +1,7 @@
 import React, { useEffect, useRef } from "react";
+import { AmbientLight, Color, PCFSoftShadowMap, PointLight } from "three";
 import {
-  DirectionalLight,
-  AmbientLight,
-  Color,
-  HemisphereLight,
-  Vector3,
-  BoxGeometry,
-  MeshBasicMaterial,
-  Mesh,
-  Group,
-} from "three";
-import {
+  ceiling,
   createCamera,
   createScene,
   createWall,
@@ -19,7 +10,7 @@ import {
   startBlock,
 } from "../components";
 // import { Resizer } from "../systems/Resizer.js";
-import { checkCollision, maze, startPosition, endPosition } from "../core";
+import { maze, startPosition, endPosition } from "../core";
 import {
   createRenderer,
   Loop,
@@ -34,10 +25,10 @@ class World {
     this.scene = createScene();
     this.renderer = createRenderer(); // creates a canvas element
 
-  let { controls, keys, dispose } = setupControls(this.camera, document.body);
-  this.controls = controls;
-  this.keys = keys;
-  this.controlsDispose = dispose;
+    let { controls, keys, dispose } = setupControls(this.camera, document.body);
+    this.controls = controls;
+    this.keys = keys;
+    this.controlsDispose = dispose;
 
     this.playerMovementInstance = new PlayerMovement(
       this.camera,
@@ -53,8 +44,8 @@ class World {
     let width = container.clientWidth;
     let height = container.clientHeight;
     this.renderer.setSize(width, height);
-    this.camera.aspect = width / height;
-    this.camera.updateProjectionMatrix();
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.type = PCFSoftShadowMap;
 
     // loop manager if needed elsewhere
     this.loop = new Loop(this.camera, this.scene, this.renderer);
@@ -62,6 +53,7 @@ class World {
     // hook up controls handling to the loop
     this.loop.onRender = () => {
       this.playerMovementInstance.update();
+      this.torchLight.intensity = 2.0 + Math.sin(Date.now() * 0.01) * 0.3;
     };
 
     let cell_size = 5; // what is set in wall.js
@@ -73,22 +65,34 @@ class World {
       startPosition[1] * cell_size + cell_size / 2
     );
 
-    // add lighting maybe to a different file later
-    let directionalLight = new DirectionalLight(0xffffff, 1);
-    directionalLight.position.set(5, 5, 5);
-    let ambientLight = new AmbientLight(0xffffff, 0.3);
-    let hemiLight = new HemisphereLight(
-      0x87ceeb, // sky color
-      0x654321, // ground color (brown)
-      0.6
+    this.camera.aspect = width / height;
+    this.camera.updateProjectionMatrix();
+
+    let ambientLight = new AmbientLight(0x404040, 0.5); // Much darker
+
+    this.torchLight = new PointLight(
+      0xF8E17A,
+      3.0, // Intensity
+      20, // Range/distance
+      2 // Decay (how quickly it falls off)
     );
+
+    this.torchLight.castShadow = true;
+    this.torchLight.shadow.mapSize.width = 1024;
+    this.torchLight.shadow.mapSize.height = 1024;
+    this.torchLight.shadow.camera.near = 0.1;
+    this.torchLight.shadow.camera.far = 15;
+
+    // Position it slightly in front of and to the side of camera
+    this.torchLight.position.set(0.5, -0.2, 0.5);
+    this.camera.add(this.torchLight); // Attach to camera so it moves with player
 
     this.scene.add(
       ambientLight,
-      directionalLight,
+      this.camera,
+      ceiling(),
       endBlock(),
       ground(),
-      hemiLight,
       startBlock()
     );
 

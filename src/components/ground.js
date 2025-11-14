@@ -9,7 +9,7 @@ const ground = () => {
   );
 
   let groundMaterial = new MeshStandardMaterial({
-    color: 0x228b22,
+    color: 0x808080,
     roughness: 2,
     metalness: 0.2,
   });

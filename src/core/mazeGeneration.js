@@ -73,40 +73,38 @@ function generateMazePrims(width, height) {
         }
     }
 
-    // logic for entrance and exit
-    // randomly choose a random row and column for entrance and exit that is set to 0
-        // "entrance" is not an opening, you just start from there
-        // "exit" is where you want to go to exit the maze; also not an opening either [like barony]
-    let startMazeRow, exitMazeRow, startMazeCol, exitMazeCol;
-
-    let foundEntrance = false; 
-    let foundExit = false;
-
     let startPosition, endPosition;
 
-    while (!foundEntrance){
-        startMazeRow = Math.floor(Math.random() * height) + 1; // +1 for border offset since we dont care about the borders that are at row/col 0 and height+1/width+1
-        while(!foundEntrance){ //might not be the most optimal LOL
-            startMazeCol = Math.floor(Math.random() * width) + 1;
-            if (updatedMaze[startMazeRow][startMazeCol] === 0){
-                foundEntrance = true;
-                // set entrance cell to 2
-                startPosition = [startMazeRow, startMazeCol];
+    let openCells = [];
+    
+    // follect all open cells
+    for (let i = 1; i < height + 1; i++) {
+        for (let j = 1; j < width + 1; j++) {
+            if (updatedMaze[i][j] === 0) {
+                openCells.push([i, j]);
             }
         }
     }
-
-    while (!foundExit){
-        exitMazeRow = Math.floor(Math.random() * height) + 1; // +1 for border offset since we dont care about the borders that are at row/col 0 and height+1/width+1
-        while(!foundExit){ //might not be the most optimal LOL
-            exitMazeCol = Math.floor(Math.random() * width) + 1;
-            if (updatedMaze[exitMazeRow][exitMazeCol] === 0){
-                foundExit = true;
-                endPosition = [exitMazeRow, exitMazeCol];
-            }
-        }
+    
+    // make sure at least 2 open cells
+    if (openCells.length < 2) {
+        console.error("Maze generation failed - not enough open cells!");
+        startPosition = [1, 1];
+        endPosition = [1, 2];
+        return { maze: updatedMaze, startPosition, endPosition };
     }
-
+    
+    // pick random start position
+    let startIndex = Math.floor(Math.random() * openCells.length);
+    startPosition = openCells[startIndex];
+    
+    // remove start position from available cells
+    openCells.splice(startIndex, 1);
+    
+    // pick random end position from remaining cells
+    let endIndex = Math.floor(Math.random() * openCells.length);
+    endPosition = openCells[endIndex];
+    
     return { maze: updatedMaze, startPosition, endPosition };
 }
 
@@ -115,5 +113,5 @@ function printMaze(maze) {
 }
 
 // generate and print a 5x5 maze [for now]
-let { maze, startPosition, endPosition } = generateMazePrims(15, 15);
+let { maze, startPosition, endPosition } = generateMazePrims(5, 5);
 export { maze, startPosition, endPosition };

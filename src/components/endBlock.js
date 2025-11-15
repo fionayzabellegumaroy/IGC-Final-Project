@@ -15,6 +15,13 @@ const endBlock = () => {
     0,
     endPosition[1] * cell_size + cell_size / 2
   );
+
+  geometry.userData = { 
+    type: 'endBlock', 
+    gridX: endPosition[0], 
+    gridZ: endPosition[1] 
+  };
+  
   return geometry;
 };
 

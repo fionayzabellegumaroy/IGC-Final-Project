@@ -20,7 +20,7 @@ export function createGround(gridX, gridZ) {
 
   ground.position.set(
     gridX * CELL_SIZE + CELL_SIZE / 2,
-    0,
+    -0.05,
     gridZ * CELL_SIZE + CELL_SIZE / 2
   );
 

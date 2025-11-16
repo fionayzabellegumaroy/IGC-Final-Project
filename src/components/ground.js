@@ -1,27 +1,36 @@
 import { PlaneGeometry, Mesh, MeshLambertMaterial } from "three";
-import { maze, startPosition, endPosition } from "../core";
+import { maze } from "../core";
+import * as THREE from 'three';
+import atlasUrl from '../assets/textures/textures.png';
+import { createMaterialForType } from '../utils';
 
-const ground = () => {
-  let cell_size = 5;
-  let groundGeometry = new PlaneGeometry(
-    maze[0].length * cell_size,
-    maze.length * cell_size
+let CELL_SIZE = 5;
+let cachedTexture = null;
+let cachedMaterial = null;
+
+export function createGround(gridX, gridZ) {
+  let groundGeometry = new THREE.BoxGeometry(
+    CELL_SIZE, 0.1, CELL_SIZE
   );
 
-  let groundMaterial = new MeshLambertMaterial({
-    color: 0x808080,
-  });
+  let groundMaterial = createMaterialForType('ground');
 
   let ground = new Mesh(groundGeometry, groundMaterial);
   ground.receiveShadow = true;  
-  ground.rotation.x = -Math.PI / 2; // rotate to be horizontal
 
   ground.position.set(
-    (maze[0].length * cell_size) / 2 , //divide by 2 to center Plane Geometry [it starts with being at [-some number, some number] instead of [0,0]
+    gridX * CELL_SIZE + CELL_SIZE / 2,
     0,
-    (maze.length * cell_size) / 2
+    gridZ * CELL_SIZE + CELL_SIZE / 2
   );
+
+   ground.userData = { 
+    type: 'ground', 
+    gridX: gridX, 
+    gridZ: gridZ 
+  };
+  
+
   return ground;
 };
 
-export { ground };

@@ -274,7 +274,6 @@ class World {
   }
 }
 
-// ThreeJsWorld React wrapper
 export let ThreeJsWorld = ({ onExit } = {}) => {
   let containerRef = useRef(null); // holds the DOM node where we mount the canvas
   let worldRef = useRef(null); // stores the World instance

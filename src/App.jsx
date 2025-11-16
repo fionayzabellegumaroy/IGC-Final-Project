@@ -2,6 +2,7 @@ import { ThreeJsWorld as World } from "./pages";
 import { Grid } from "@mui/material";
 import { useState } from "react";
 import { no, screen, triangle, yes } from "./assets";
+import { regenerateMaze } from './core/mazeGeneration.js';
 import { min } from "three/tsl";
 
 function App() {
@@ -62,7 +63,7 @@ function App() {
               zIndex: 1000,
             }}
           >
-            <Grid sx={{ flexShrink: 0 }} onClick={() => setStart(1)}>
+            <Grid sx={{ flexShrink: 0 }} onClick={() => { try { regenerateMaze(); } catch(e){}; setStart(1); }}>
               <img
                 src={yes}
                 style={{

@@ -281,6 +281,9 @@ export let ThreeJsWorld = ({ onExit } = {}) => {
   useEffect(() => {
     if (!containerRef.current) return;
 
+    // regenerate maze so each world instance starts with a fresh maze
+    try { regenerateMaze(); } catch (e) {}
+
     // initialize world and pass the onExit callback into the World instance
     worldRef.current = new World(containerRef.current, { onExit });
 

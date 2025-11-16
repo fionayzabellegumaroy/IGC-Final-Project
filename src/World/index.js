@@ -1,1 +1,0 @@
-export { ThreeJsWorld } from './World.jsx';

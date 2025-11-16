@@ -112,6 +112,16 @@ function printMaze(maze) {
     return maze.map(row => row.join('')).join('\n');
 }
 
-// generate and print a 5x5 maze [for now]
-let { maze, startPosition, endPosition } = generateMazePrims(5, 5);
-export { maze, startPosition, endPosition };
+export let maze, startPosition, endPosition;
+
+function initMaze(width = 5, height = 5) {
+    const result = generateMazePrims(width, height);
+    maze = result.maze;
+    startPosition = result.startPosition;
+    endPosition = result.endPosition;
+    return { maze, startPosition, endPosition };
+}
+
+initMaze(5, 5);
+
+export { initMaze as regenerateMaze };

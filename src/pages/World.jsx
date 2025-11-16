@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import { Grid } from "@mui/material";
 import {
   AmbientLight,
   Color,
@@ -11,10 +12,11 @@ import {
 import {
   ceiling,
   createCamera,
+  createGround,
   createScene,
   createWall,
   endBlock,
-  ground,
+  // ground,
   player,
   startBlock,
 } from "../components";
@@ -29,10 +31,11 @@ import {
 
 class World {
   //synchronous set
-  constructor(container) {
+  constructor(container, options = {}) {
     this.camera = createCamera();
     this.scene = createScene();
     this.renderer = createRenderer(); // creates a canvas element
+    this.onExit = options.onExit;
     this.isPopupOpen = false;
 
     let { controls, keys, dispose } = setupControls(
@@ -91,7 +94,7 @@ class World {
 
     this.torchLight = new PointLight(
       0xf8e17a,
-      3.0, // Intensity
+      5.0, // Intensity
       20, // Range/distance
       2 // Decay (how quickly it falls off)
     );
@@ -115,8 +118,8 @@ class World {
       this.camera,
       ceiling(),
       endBlock(),
-      ground(),
-      startBlock(),
+      // ground(),
+      // startBlock(),
       this.player
     );
 
@@ -124,13 +127,15 @@ class World {
 
     //add later loop.updatables.push(some thing);
 
-    // add walls
+    // add walls & ground
     for (let i = 0; i < maze.length; i++) {
       for (let j = 0; j < maze[i].length; j++) {
         if (maze[i][j] === 1) {
           let wall = createWall(i, j);
           this.scene.add(wall);
         }
+        let groundBlock = createGround(i, j);
+        this.scene.add(groundBlock);
       }
     }
 
@@ -148,7 +153,7 @@ class World {
       }
 
       // torchlight animation
-      this.torchLight.intensity = 2.0 + Math.sin(Date.now() * 0.01) * 0.3;
+      this.torchLight.intensity = 5.0 + Math.sin(Date.now() * 0.01) * 0.3;
 
       // keep player model in sync with camera position
       this.player.position.copy(this.camera.position);
@@ -239,10 +244,13 @@ class World {
     closeButton.textContent = "Close";
     closeButton.onclick = () => {
       popup.remove();
-
-      // re-enable everything
       this.isPopupOpen = false;
-      this.controls.enabled = true;
+      // Re-enable controls when popup closes
+      try { this.controls.enabled = true; } catch (e) {}
+      // If an exit callback was provided, call it to return to start screen
+      if (typeof this.onExit === 'function') {
+        this.onExit();
+      }
     };
 
     popup.innerHTML = `<h3>${title}</h3>`;
@@ -266,15 +274,16 @@ class World {
   }
 }
 
-export let ThreeJsWorld = () => {
+// ThreeJsWorld React wrapper
+export let ThreeJsWorld = ({ onExit } = {}) => {
   let containerRef = useRef(null); // holds the DOM node where we mount the canvas
   let worldRef = useRef(null); // stores the World instance
 
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // initialize world
-    worldRef.current = new World(containerRef.current); // World now has handle to actual div
+    // initialize world and pass the onExit callback into the World instance
+    worldRef.current = new World(containerRef.current, { onExit });
 
     // start the Loop system
     worldRef.current.loop.start();
@@ -282,21 +291,22 @@ export let ThreeJsWorld = () => {
     // cleanup function
     return () => {
       if (worldRef.current) {
-        worldRef.current.loop.stop();
-        worldRef.current.dispose();
+        try { worldRef.current.loop.stop(); } catch (e) {}
+        try { worldRef.current.dispose(); } catch (e) {}
+        worldRef.current = null;
       }
     };
-  }, []); // empty dependency array ensures this runs once on mount and cleans up on unmount
+  }, [onExit]); // re-run if onExit changes
 
   return (
     <>
-      <div className="w-full h-screen">
-        <div
+      <Grid container id="world-container" sx={{ height: "100vh", position: "absolute", width: "100vw" }}>
+        <Grid
+          id="world"
           ref={containerRef} // JSX renders div and after first mount, React assigns real DOM node to containerRef.current
-          className="fullscreen"
-          style={{ margin: 0, padding: 0, overflow: "hidden" }}
+          style={{ margin: 0, padding: 0, overflow: "hidden", width: "100%", height: "100%" }}
         />
-      </div>
+      </Grid>
     </>
   );
 };

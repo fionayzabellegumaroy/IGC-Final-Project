@@ -19,8 +19,7 @@ export function setupControls(camera, domElement, onObjectClick = null, getPopup
 
   const onClick = (event) => {
     const isPopupOpen = getPopupState ? getPopupState() : false;
-    if (isPopupOpen) {
-      // popup, so don't do anything
+    if (isPopupOpen) { // popup, so don't do anything
       return;
     }
     
@@ -47,7 +46,6 @@ export function setupControls(camera, domElement, onObjectClick = null, getPopup
     try {
       controls.unlock();
     } catch (err) {
-      // ignore
     }
   }
 

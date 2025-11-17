@@ -1,4 +1,4 @@
-class Resizer {
+export class Resizer {
   // constructor(container, camera, renderer) {
   //   this.camera = camera;
   //   this.renderer = renderer;
@@ -18,5 +18,3 @@ class Resizer {
   //   this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   // }
 }
-
-export { Resizer };

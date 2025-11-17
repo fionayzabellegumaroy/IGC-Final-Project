@@ -1,14 +1,11 @@
-import * as THREE from 'three';
+import { BoxGeometry, Mesh, MeshStandardMaterial } from "three";
 
-import { PlaneGeometry, Mesh, MeshStandardMaterial } from "three";
-
-const player = () => {
-  let cell_size = 1;
-  let playerMesh = new THREE.Mesh(
-    new THREE.BoxGeometry(cell_size, 0.5, cell_size),
-    new THREE.MeshStandardMaterial({ color: 0xFFA500 })
+// temporary player component
+export const player = () => {
+  let cellSize = 1;
+  let playerMesh = new Mesh(
+    new BoxGeometry(cellSize, 0.5, cellSize),
+    new MeshStandardMaterial({ color: 0xFFA500 })
   );
   return playerMesh;
 };
-
-export { player };

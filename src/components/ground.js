@@ -1,16 +1,12 @@
-import { PlaneGeometry, Mesh, MeshLambertMaterial } from "three";
-import { maze } from "../core";
-import * as THREE from 'three';
-import atlasUrl from '../assets/textures/textures.png';
+import { BoxGeometry, Mesh } from "three";
 import { createMaterialForType } from '../utils';
 
-let CELL_SIZE = 5;
-let cachedTexture = null;
-let cachedMaterial = null;
 
 export function createGround(gridX, gridZ) {
-  let groundGeometry = new THREE.BoxGeometry(
-    CELL_SIZE, 0.1, CELL_SIZE
+  let cellSize = 5;
+
+  let groundGeometry = new BoxGeometry(
+    cellSize, 0.1, cellSize
   );
 
   let groundMaterial = createMaterialForType('ground');
@@ -19,9 +15,9 @@ export function createGround(gridX, gridZ) {
   ground.receiveShadow = true;  
 
   ground.position.set(
-    gridX * CELL_SIZE + CELL_SIZE / 2,
+    gridX * cellSize + cellSize / 2,
     -0.05,
-    gridZ * CELL_SIZE + CELL_SIZE / 2
+    gridZ * cellSize + cellSize / 2
   );
 
    ground.userData = { 
@@ -33,4 +29,3 @@ export function createGround(gridX, gridZ) {
 
   return ground;
 };
-

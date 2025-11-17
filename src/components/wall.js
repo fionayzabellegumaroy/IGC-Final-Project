@@ -1,22 +1,19 @@
-import * as THREE from 'three';
-import { MeshLambertMaterial } from 'three';
+import { BoxGeometry, Mesh } from 'three';
 import atlasUrl from '../assets/textures/textures.png';
 import { createMaterialForType } from '../utils';
 
-let CELL_SIZE = 5;
-let cachedTexture = null;
-let cachedMaterial = null;
-
 export function createWall(gridX, gridZ) {
-  const geometry = new THREE.BoxGeometry(CELL_SIZE, CELL_SIZE, CELL_SIZE);
+  let cellSize = 5;
+  const geometry = new BoxGeometry(cellSize, cellSize, cellSize);
   const material = createMaterialForType('wall');
-  const wall = new THREE.Mesh(geometry, material);
+  const wall = new Mesh(geometry, material);
   
   wall.receiveShadow = true;
+  
   wall.position.set(
-    gridX * CELL_SIZE + CELL_SIZE / 2,
-    CELL_SIZE / 2,
-    gridZ * CELL_SIZE + CELL_SIZE / 2
+    gridX * cellSize + cellSize / 2,
+    cellSize / 2,
+    gridZ * cellSize + cellSize / 2
   );
 
   wall.userData = { 

@@ -98,6 +98,7 @@ export function createMaterialForType(blockType, opts = {}) {
       tileSize / atlasWidth,
       tileSize / atlasHeight
     );
+    
     material.map.offset.set(
       (tileX * tileSize) / atlasWidth,
       1 - ((tileY + 1) * tileSize) / atlasHeight

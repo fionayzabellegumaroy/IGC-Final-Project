@@ -2,7 +2,7 @@ import { BoxGeometry, Mesh } from "three";
 import { createMaterialForType } from '../utils';
 
 
-export function createGround(gridX, gridZ) {
+export const ground = (gridX, gridZ) => {
   let cellSize = 5;
 
   let groundGeometry = new BoxGeometry(

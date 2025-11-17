@@ -7,5 +7,8 @@ export const player = () => {
     new BoxGeometry(cellSize, 0.5, cellSize),
     new MeshStandardMaterial({ color: 0xFFA500 })
   );
+  
+  playerMesh.position.set(0, -0.75, 0); // adjust player model position relative to camera
+
   return playerMesh;
 };

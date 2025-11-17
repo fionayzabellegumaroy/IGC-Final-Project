@@ -1,6 +1,6 @@
 import { Scene } from 'three';
 
-export function createScene() {
+export const scene = () => {
     const scene = new Scene();
     return scene;
 }

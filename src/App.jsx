@@ -1,4 +1,4 @@
-import { ThreeJsWorld as World } from "./pages";
+import { ThreeJsWorld as World } from "./components";
 import { Grid } from "@mui/material";
 import { useState } from "react";
 import { no, screen, triangle, yes } from "./assets";

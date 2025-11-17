@@ -6,3 +6,4 @@ export * from './player.js';
 export * from './scene.js';
 export * from './startBlock.js';
 export * from './wall.js';
+export * from './World.jsx';

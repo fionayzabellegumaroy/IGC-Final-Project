@@ -13,5 +13,5 @@ For now, this uses pointer lock controls, which means that you have to click/dou
 ## To Run Program
 
 npm install
-npm run build
-npm run dev
+<br>npm run build
+<br>npm run dev

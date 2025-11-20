@@ -9,7 +9,7 @@ export const ceiling = () => {
   let ceilingGeometry = new PlaneGeometry(width, depth);
 
   let ceilingMaterial = new MeshStandardMaterial({
-    color: 0x808080,
+    color: 0x2e1503,
     roughness: 1,
     metalness: 0.2,
     side: DoubleSide, // allows player to see plane from below
@@ -18,7 +18,7 @@ export const ceiling = () => {
   let ceilingMesh = new Mesh(ceilingGeometry, ceilingMaterial);
   ceilingMesh.rotation.x = Math.PI / 2; // rotate to be horizontal
 
-  ceilingMesh.position.set(width / 2, cellSize, depth / 2); // places ceiling at top of maze walls
+  ceilingMesh.position.set(width / 2, cellSize*2, depth / 2); // places ceiling at top of maze walls
 
   return ceilingMesh;
 };

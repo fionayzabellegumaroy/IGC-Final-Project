@@ -108,7 +108,7 @@ function printMaze(maze) {
 
 export let maze, startPosition, endPosition;
 
-function initMaze(width = 5, height = 5) {
+function initMaze(width = 15, height = 15) {
     const result = generateMazePrims(width, height);
     maze = result.maze;
     startPosition = result.startPosition;

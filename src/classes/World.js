@@ -96,9 +96,11 @@ export class World {
     for (let i = 0; i < maze.length; i++) {
       for (let j = 0; j < maze[i].length; j++) {
         if (maze[i][j] === 1) {
-          let wall = createWall(i, j);
+          let wall = createWall(i, j, 5/2);
           this.scene.add(wall);
-        }
+          let secondWall = createWall(i, j, 7.5);
+          this.scene.add(secondWall);
+          continue;}
         let groundBlock = ground(i, j);
         this.scene.add(groundBlock);
       }

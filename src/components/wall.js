@@ -2,7 +2,7 @@ import { BoxGeometry, Mesh } from 'three';
 import atlasUrl from '../assets/textures/textures.png';
 import { createMaterialForType } from '../utils';
 
-export function createWall(gridX, gridZ) {
+export function createWall(gridX, gridZ, height) {
   let cellSize = 5;
   const geometry = new BoxGeometry(cellSize, cellSize, cellSize);
   const material = createMaterialForType('wall');
@@ -10,11 +10,13 @@ export function createWall(gridX, gridZ) {
   
   wall.receiveShadow = true;
   
+
   wall.position.set(
     gridX * cellSize + cellSize / 2,
-    cellSize / 2,
+    height,
     gridZ * cellSize + cellSize / 2
   );
+
 
   wall.userData = { 
     type: 'wall', 

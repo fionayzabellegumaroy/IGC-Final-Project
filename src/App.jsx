@@ -1,13 +1,27 @@
 import { ThreeJsWorld as World } from "./components";
 import { Grid } from "@mui/material";
-import { useState } from "react";
-import { no, screen, triangle, yes } from "./assets";
-import { regenerateMaze } from './core/mazeGeneration.js';
-import { min } from "three/tsl";
+import { useEffect, useRef, useState } from "react";
+import { audio as audioSrc, no, screen, triangle, yes } from "./assets";
+import { regenerateMaze } from "./core/mazeGeneration.js";
 
 function App() {
   const [start, setStart] = useState(0);
+  const bgAudioRef = useRef(null);
 
+  useEffect(() => {
+    // create background audio from imported asset; name locally to avoid shadowing the import
+    const audio = new Audio(audioSrc);
+    audio.volume = 0.1;
+    audio.loop = true;
+    bgAudioRef.current = audio;
+
+    return () => {
+      try {bgAudioRef.current.pause();} catch(e) {}
+      bgAudioRef.current = null;
+    }
+  }, []);
+
+  bgAudioRef.current?.play().catch(() => {}); 
   return (
     <Grid
       id="everything"
@@ -24,7 +38,10 @@ function App() {
       }}
     >
       {start ? (
-        <Grid id="world-grid" sx={{  height: "100vh", position: "absolute", width: "100vw" }}>
+        <Grid
+          id="world-grid"
+          sx={{ height: "100vh", position: "absolute", width: "100vw" }}
+        >
           <World onExit={() => setStart(0)} />
         </Grid>
       ) : (
@@ -33,9 +50,9 @@ function App() {
           container
           alignItems="center"
           justifyContent="center"
-          sx={{  height: "100vh", position: "absolute", width: "100vw" }}
+          sx={{ height: "100vh", position: "absolute", width: "100vw" }}
         >
-          <Grid sx={{flexShrink: 0,}}>
+          <Grid sx={{ flexShrink: 0 }}>
             <img
               src={screen}
               style={{
@@ -63,22 +80,30 @@ function App() {
               zIndex: 1000,
             }}
           >
-            <Grid sx={{ flexShrink: 0 }} onClick={() => { try { regenerateMaze(); } catch(e){}; setStart(1); }}>
+            <Grid
+              sx={{ flexShrink: 0 }}
+              onClick={() => {
+                try {
+                  regenerateMaze();
+                } catch (e) {}
+                setStart(1);
+              }}
+            >
               <img
                 src={yes}
                 style={{
                   width: "70px",
                   height: "70px",
-                  cursor: "pointer"
+                  cursor: "pointer",
                 }}
               />
             </Grid>
-            <Grid sx={{ flexShrink: 0 }} >
+            {/* <Grid sx={{ flexShrink: 0 }} >
               <img src={no} style={{ width: "70px",
                   height: "70px",
                   cursor: "pointer"
                   }} />
-            </Grid>
+            </Grid> */}
           </Grid>
         </Grid>
       )}

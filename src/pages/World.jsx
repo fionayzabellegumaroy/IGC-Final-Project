@@ -1,62 +1,62 @@
+import React, { useEffect, useRef } from "react";
+import { Grid } from "@mui/material";
 import {
+  AmbientLight,
   Color,
   PCFSoftShadowMap,
+  PointLight,
   Raycaster,
   Vector2,
   Vector3,
 } from "three";
 import {
-  ambientLight,
-  camera,
   ceiling,
+  createCamera,
+  createGround,
+  createScene,
   createWall,
   endBlock,
-  ground,
+  // ground,
   player,
-  startBlock, // removed for now; idk what to do for this yet
-  scene,
-  torch,
+  startBlock,
 } from "../components";
 // import { Resizer } from "../systems/Resizer.js";
-import { maze } from "../core";
+import { maze, startPosition, endPosition } from "../core";
 import {
+  createRenderer,
   Loop,
   PlayerMovement,
-  renderer,
   setupControls,
 } from "../systems";
-import { letter } from '../assets';
+import { letter, screen } from '../assets';
 
-export class World {
+class World {
+  //synchronous set
   constructor(container, options = {}) {
-    this.camera = camera();
-    this.scene = scene();
-    this.renderer = renderer(); // creates a canvas element
+    this.camera = createCamera();
+    this.scene = createScene();
+    this.renderer = createRenderer(); // creates a canvas element
     this.onExit = options.onExit;
     this.isPopupOpen = false;
-    this.torchLight = torch();
-    this.raycaster = new Raycaster();
-    this.mouse = new Vector2();
-    this.ambientLight = ambientLight();
-    this.player = player();
 
     let { controls, keys, dispose } = setupControls(
       this.camera,
       document.body,
-      this.onObjectClick.bind(this),
+      this.onObjectClick.bind(this), 
       () => this.isPopupOpen
     );
-
     this.controls = controls;
     this.keys = keys;
 
-    // reset controls
-    this.renderer.domElement.style.pointerEvents = "none"; // disable click events on the renderer canvas
-    this.controlsDispose = dispose;
+    // disable click events on the renderer canvas
+    this.renderer.domElement.style.pointerEvents = "none";
+
+    // clear any held keys
     Object.keys(this.keys).forEach((key) => {
-      // clear any held keys
       this.keys[key] = false;
     });
+
+    this.controlsDispose = dispose;
 
     this.playerMovementInstance = new PlayerMovement(
       this.camera,
@@ -68,24 +68,59 @@ export class World {
 
     this.scene.background = new Color(0x87ceeb); // sky blue
 
+    // finds the width and height for camera settings
     let width = container.clientWidth;
     let height = container.clientHeight;
-
     this.renderer.setSize(width, height);
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = PCFSoftShadowMap;
 
+    // add raycaster and mouse tracking
+    this.raycaster = new Raycaster();
+    this.mouse = new Vector2();
+
+    let cell_size = 5; // what is set in wall.js
+
+    //this is first person POV
+    this.camera.position.set(
+      startPosition[0] * cell_size + cell_size / 2,
+      1.6, // Eye height
+      startPosition[1] * cell_size + cell_size / 2
+    );
+
     this.camera.aspect = width / height;
-    // this.camera.updateProjectionMatrix();
+    this.camera.updateProjectionMatrix();
+
+    let ambientLight = new AmbientLight(0x404040, 0.5);
+
+    this.torchLight = new PointLight(
+      0xf8e17a,
+      5.0, // Intensity
+      20, // Range/distance
+      2 // Decay (how quickly it falls off)
+    );
+
+    this.torchLight.castShadow = true;
+    this.torchLight.shadow.mapSize.width = 1024;
+    this.torchLight.shadow.mapSize.height = 1024;
+    this.torchLight.shadow.camera.near = 0.1;
+    this.torchLight.shadow.camera.far = 15;
+
+    this.torchLight.position.set(0.5, -0.2, 0.5); // position it slightly in front of and to the side of camera
+
+    this.player = player();
+    this.player.position.set(0, -0.75, 0); // adjust player model position relative to camera
 
     // attach to camera so it moves with player
     this.camera.add(this.torchLight);
 
     this.scene.add(
-      this.ambientLight,
+      ambientLight,
       this.camera,
       ceiling(),
       endBlock(),
+      // ground(),
+      // startBlock(),
       this.player
     );
 
@@ -97,27 +132,22 @@ export class World {
     for (let i = 0; i < maze.length; i++) {
       for (let j = 0; j < maze[i].length; j++) {
         if (maze[i][j] === 1) {
-          let wall = createWall(i, j, 5/2);
+          let wall = createWall(i, j);
           this.scene.add(wall);
-          let secondWall = createWall(i, j, 7.5);
-          this.scene.add(secondWall);
-          continue;}
-        let groundBlock = ground(i, j);
+        }
+        let groundBlock = createGround(i, j);
         this.scene.add(groundBlock);
       }
     }
 
-    // async init() {
-    //     // asynchronous setup here
-    // }
-
-    // loop manager if needed elsewhere
     this.loop = new Loop(this.camera, this.scene, this.renderer);
+
+    // add player movement to loop updatables so it receives frame delta via tick(delta)
+    this.loop.updatables.push(this.playerMovementInstance);
 
     // hook up controls handling to the loop
     this.loop.onRender = () => {
-      if (!this.isPopupOpen && this.controls.enabled) {
-        // only update if popup is not open
+      if (!this.isPopupOpen && this.controls.enabled) { // only update if popup is not open
         this.playerMovementInstance.update();
       }
 
@@ -130,9 +160,7 @@ export class World {
 
       // gets camera direction to later use for player model rotation
       const direction = new Vector3();
-      this.camera.getWorldDirection(direction);
-
-      // convert direction to Y rotation
+      this.camera.getWorldDirection(direction);      // convert direction to Y rotation
       const yRotation = Math.atan2(direction.x, direction.z);
       if (this.player) this.player.rotation.y = yRotation;
     };
@@ -166,6 +194,8 @@ export class World {
 
     if (intersects.length > 0) {
       const clickedObject = intersects[0].object;
+      console.log("Clicked object:", clickedObject);
+      console.log("Object userData:", clickedObject.userData);
 
       // check what type of object was clicked
       if (
@@ -175,6 +205,8 @@ export class World {
         this.showEndBlockPopup(clickedObject);
         this.controls.unlock();
       }
+    } else {
+      console.log("No objects intersected");
     }
   }
 
@@ -182,19 +214,19 @@ export class World {
     this.createDOMPopup();
   }
 
-  createDOMPopup(opts) {
-    const options = typeof opts === 'string' ? { title: opts } : (opts || {});
-    const { image = null } = options;
+  createDOMPopup(titleOrOpts) {
+    const opts = typeof titleOrOpts === 'string' ? { title: titleOrOpts } : (titleOrOpts || {});
+    const { image = null } = opts;
 
-    // default to letter image
+    // default to `letter` image from assets when no image provided
     const imgSrc = image || letter;
 
     // set popup state
     this.isPopupOpen = true;
 
-    // disable all camera/movement controls
+    // try to release pointer lock and disable controls
     try { this.controls.unlock(); } catch (e) {}
-    this.controls.enabled = false; // Disable mouse look
+    this.controls.enabled = false;
 
     // clear any held keys
     Object.keys(this.keys).forEach((key) => {
@@ -202,6 +234,7 @@ export class World {
     });
 
     const popup = document.createElement('div');
+    // basic visible centering and styling
     popup.style.position = 'fixed';
     popup.style.top = '50%';
     popup.style.left = '50%';
@@ -209,8 +242,11 @@ export class World {
     popup.style.background = 'rgba(255,255,255,0.98)';
     popup.style.border = '2px solid #222';
     popup.style.padding = '12px';
+    popup.style.borderRadius = '8px';
     popup.style.zIndex = '10000';
+    popup.style.textAlign = 'center';
 
+    // image element (shows `letter` by default)
     const img = document.createElement('img');
     img.src = imgSrc;
     img.alt = 'letter';
@@ -222,11 +258,13 @@ export class World {
 
     const closeButton = document.createElement('button');
     closeButton.textContent = 'Close';
+    closeButton.style.marginTop = '8px';
     closeButton.onclick = () => {
       popup.remove();
       this.isPopupOpen = false;
-      // reenable controls when popup closes
+      // Re-enable controls when popup closes
       try { this.controls.enabled = true; } catch (e) {}
+      // If an exit callback was provided, call it to return to start screen
       if (typeof this.onExit === 'function') {
         this.onExit();
       }
@@ -249,19 +287,44 @@ export class World {
     }
 
     this.renderer.dispose();
-
-    // remove and clean up torch light if present
-    if (this.torchLight) {
-      try {
-        this.camera.remove(this.torchLight);
-      } catch (e) {}
-    }
-
-    try {
-      if (this.ambientLight && this.scene) {
-        this.scene.remove(this.ambientLight);
-      }
-    } catch (e) {}
-
   }
 }
+
+export let ThreeJsWorld = ({ onExit } = {}) => {
+  let containerRef = useRef(null); // holds the DOM node where we mount the canvas
+  let worldRef = useRef(null); // stores the World instance
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    // regenerate maze so each world instance starts with a fresh maze
+    try { regenerateMaze(); } catch (e) {}
+
+    // initialize world and pass the onExit callback into the World instance
+    worldRef.current = new World(containerRef.current, { onExit });
+
+    // start the Loop system
+    worldRef.current.loop.start();
+
+    // cleanup function
+    return () => {
+      if (worldRef.current) {
+        try { worldRef.current.loop.stop(); } catch (e) {}
+        try { worldRef.current.dispose(); } catch (e) {}
+        worldRef.current = null;
+      }
+    };
+  }, [onExit]); // re-run if onExit changes
+
+  return (
+    <>
+      <Grid container id="world-container" sx={{ height: "100vh", position: "absolute", width: "100vw" }}>
+        <Grid
+          id="world"
+          ref={containerRef} // JSX renders div and after first mount, React assigns real DOM node to containerRef.current
+          style={{ margin: 0, padding: 0, overflow: "hidden", width: "100%", height: "100%" }}
+        />
+      </Grid>
+    </>
+  );
+};

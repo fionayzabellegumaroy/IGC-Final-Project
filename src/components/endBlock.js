@@ -6,8 +6,8 @@ import { endPosition } from "../core";
 export const endBlock = () => {
   let cellSize = 5;
   let endGeometry = new Mesh(
-    new BoxGeometry(cellSize, 0.5, cellSize),
-    new MeshLambertMaterial({ color: 0xFFA500 })
+    new BoxGeometry(1, 0.5, 1),
+    new MeshLambertMaterial({ color: 0xFFFFFF })
   );
 
   endGeometry.position.set(

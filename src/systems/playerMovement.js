@@ -6,9 +6,17 @@ export class PlayerMovement {
     this.camera = camera;
     this.controls = controls;
     this.keys = keys;
-    this.moveSpeed = 8.0;
+    this.moveSpeed = 5.0;
     this.delta = 0.016;
     this.collisionEnabledFn = collisionEnabledFn;
+  }
+
+  // tick called by Loop with frame delta
+  tick(delta) {
+    this.delta = delta;
+    if (this.controls && this.controls.isLocked) {
+      this.update();
+    }
   }
 
   update() {

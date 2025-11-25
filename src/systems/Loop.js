@@ -1,6 +1,5 @@
 import { Clock } from "three";
-
-const clock = new Clock();
+import { createDebugOverlay, updateDebugOverlay, disposeDebugOverlay } from './debugOverlay';
 
 export class Loop {
   constructor(camera, scene, renderer) {
@@ -9,9 +8,13 @@ export class Loop {
     this.renderer = renderer;
     this.updatables = [];
     this.onRender = null; //needed to avoid double-rendering and deals with world-specific logic
+    this.clock = new Clock();
   }
 
   start() {
+    // create per-loop overlay for debugging
+    try { this._debug = createDebugOverlay(); } catch (e) {}
+
     this.renderer.setAnimationLoop(() => { // start the animation loop
       this.tick(); //update animations
       
@@ -29,11 +32,35 @@ export class Loop {
   }
 
   tick() { // manages animations
-    const delta = clock.getDelta(); //call delta once per frame 
+    const rawDelta = this.clock.getDelta(); // call delta once per frame for this loop instance
+    let delta = rawDelta;
+    // clamp large deltas (e.g., when tab was inactive) to avoid big position jumps
+    const MAX_DELTA = 0.05; // 50 ms
+    if (delta > MAX_DELTA) delta = MAX_DELTA;
+
+    // Log unusually large frame times to help diagnose stutter
+    const LOG_THRESHOLD = 0.03; // 30 ms
+    if (rawDelta > LOG_THRESHOLD) {
+      try {
+        const camPos = this.camera && this.camera.position ? this.camera.position.toArray() : null;
+        console.warn(`[Loop] large frame delta detected: raw=${rawDelta.toFixed(3)}s clamped=${delta.toFixed(3)}s`, { camPos });
+      } catch (e) {
+        console.warn('[Loop] large frame delta detected', { rawDelta, delta });
+      }
+    }
+
+    // update on-screen debug overlay
+    try { updateDebugOverlay(delta, rawDelta, this.camera && this.camera.position ? this.camera.position.toArray() : null); } catch (e) {}
 
     // update all objects
     for (let object of this.updatables) {
-      object.tick(delta);
+      if (typeof object.tick === 'function') {
+        try {
+          object.tick(delta);
+        } catch (err) {
+          console.error('[Loop] error updating object tick', err);
+        }
+      }
     }
   }
 }

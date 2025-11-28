@@ -9,9 +9,9 @@ export const camera = () => {
   //this is first person POV
     camera.position.set(
       startPosition[0] * cellSize + cellSize / 2,
-      9, // Eye height
+      5, // Eye height
       startPosition[1] * cellSize + cellSize / 2
     );
 
   return camera;
-}
+};

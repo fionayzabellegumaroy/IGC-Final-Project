@@ -6,7 +6,6 @@ import {
 } from "three";
 
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { model } from "../assets";
 import { checkCollision, maze } from "../core";
 
 export class Player {
@@ -63,7 +62,7 @@ export class Player {
     
       this.camera.position.y += Math.sin(this.headBobTimer) * 0.03;
     } else {
-      
+
       // gradually return to base position when not moving
       let currentOffset = this.camera.position.y - this.baseYPosition;
       if (Math.abs(currentOffset) > 0.001) {
@@ -106,12 +105,3 @@ export class Player {
     }
   }
 }
-
-export const simplePlayer = () => {
-  let cell_size = 1;
-  let playerMesh = new Mesh(
-    new BoxGeometry(cell_size, 0.5, cell_size),
-    new MeshStandardMaterial({ color: 0xffa500 })
-  );
-  return playerMesh;
-};

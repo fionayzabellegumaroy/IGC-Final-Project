@@ -6,15 +6,18 @@ import {
   createWall,
   endBlock,
   ground,
+  playerModel,
   LetterPopup,
+  rightArmTorch,
   scene,
-  torch,
 } from "../components";
 import { maze } from "../core";
+import { CELL_SIZE } from "../utils";
 import { Loop, renderer, Resizer, setupControls } from "../systems";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { Player } from "./";
+
 export class World {
   constructor(container, options = {}) {
     this.camera = camera();
@@ -22,7 +25,6 @@ export class World {
     this.renderer = renderer(); // creates a canvas element
     this.onExit = options.onExit;
     this.isPopupOpen = false;
-    this.torchLight = torch();
     this.raycaster = new Raycaster();
     this.mouse = new Vector2();
     this.ambientLight = ambientLight();
@@ -48,7 +50,6 @@ export class World {
     this.controlsDispose = dispose;
 
     this.container = container;
-    this.resizer = new Resizer(this.container, this.camera, this.renderer);
 
     this.init();
   }
@@ -74,10 +75,47 @@ export class World {
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
 
-    // attach to camera so it moves with player
-    this.camera.add(this.torchLight);
+    this.playerModel = playerModel();
+    this.armTorchModel = rightArmTorch();
 
-    this.scene.add(this.ambientLight, this.camera, ceiling(), endBlock());
+    this.updateArmPosition = () => {
+      let aspect = this.camera.aspect;
+      let fov = this.camera.fov * (Math.PI / 180);
+
+      let distance = 7.5;
+
+      let vFOV = fov;
+      let hFOV = 2 * Math.atan(Math.tan(vFOV / 2) * aspect);
+
+      let rightEdge = Math.tan(hFOV / 2) * distance * 0.7;
+      let bottomEdge = Math.tan(vFOV / 2) * distance * -1;
+
+      this.armTorchModel.position.set(rightEdge, bottomEdge, -distance);
+    };
+
+    this.updateArmPosition();
+    this.camera.add(this.armTorchModel);
+
+    this.resizer = new Resizer(this.container, this.camera, this.renderer, () =>
+      this.updateArmPosition()
+    );
+
+    // // idk if this is working
+    // this.fireMaterial = null;
+
+    // this.armTorchModel.traverse((child) => {
+    //   if (child.isMesh && child.material.emissive && child.name === "FireMaterial") {
+    //     this.fireMaterial = child.material;
+    //   }
+    // });
+
+    this.scene.add(
+      this.ambientLight,
+      this.camera,
+      ceiling(),
+      endBlock(),
+      this.playerModel
+    );
 
     // loop manager if needed elsewhere
     this.loop = new Loop(this.camera, this.scene, this.renderer);
@@ -88,8 +126,38 @@ export class World {
         this.player.update(); // update player movement, camera, and headbobbing
       }
 
-      // torchlight animation
-      this.torchLight.intensity = 5.0 + Math.sin(Date.now() * 0.01) * 0.3;
+      // Get camera direction for rotation
+      const direction = new Vector3();
+      this.camera.getWorldDirection(direction);
+
+      // Convert direction to Y rotation
+      const yRotation = Math.atan2(direction.x, direction.z);
+      this.playerModel.rotation.y = yRotation;
+
+      // Position the model with offset relative to camera direction
+      this.playerModel.position.copy(this.camera.position);
+      this.playerModel.position.y = this.camera.position.y - 4;
+
+      direction.y = 0;
+      direction.normalize();
+      this.playerModel.position.add(direction.multiplyScalar(-1)); // negative = backward
+
+      // if (this.fireMaterial) {
+      //   this.fireMaterial.emissiveIntensity =
+      //     0.8 + Math.sin(Date.now() * 0.005) * 0.3;
+      // }
+
+      // // idk if this is right
+      this.armTorchModel.traverse((child) => {
+        let flickerAmount = Math.sin(Date.now() * 0.01) * 0.3; // 0 to 0.3 variation
+
+        if (child.name === "mainTorchLight") {
+          child.intensity = 20.0 * (1 + flickerAmount); 
+        } 
+        else {
+          child.intensity = 3.0 * (1 + flickerAmount); 
+        }
+      });
     };
     //add later loop.updatables.push(some thing);
 
@@ -97,13 +165,13 @@ export class World {
     for (let i = 0; i < maze.length; i++) {
       for (let j = 0; j < maze[i].length; j++) {
         if (maze[i][j] === 1) {
-          let wall = createWall(i, j, 5 / 2);
+          let wall = createWall(i, j, CELL_SIZE / 2);
           this.scene.add(wall);
-          let secondWall = createWall(i, j, 7.5);
+          let secondWall = createWall(i, j, CELL_SIZE * 1.5);
           this.scene.add(secondWall);
           continue;
         }
-        this.scene.add(ground(i,j));
+        this.scene.add(ground(i, j));
       }
     }
   }
@@ -184,7 +252,8 @@ export class World {
       } catch (e) {}
       // remove only the popup mount node (do NOT remove the world container)
       try {
-        if (reactMount.parentNode) reactMount.parentNode.removeChild(reactMount);
+        if (reactMount.parentNode)
+          reactMount.parentNode.removeChild(reactMount);
       } catch (e) {}
       this.isPopupOpen = false;
       try {
@@ -192,7 +261,7 @@ export class World {
       } catch (e) {}
     };
 
-     const onHome = () => {
+    const onHome = () => {
       try {
         root.unmount();
       } catch (e) {}
@@ -226,13 +295,6 @@ export class World {
     }
 
     this.renderer.dispose();
-
-    // remove and clean up torch light if present
-    if (this.torchLight) {
-      try {
-        this.camera.remove(this.torchLight);
-      } catch (e) {}
-    }
 
     try {
       if (this.ambientLight && this.scene) {

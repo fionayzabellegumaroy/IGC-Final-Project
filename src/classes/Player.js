@@ -63,6 +63,7 @@ export class Player {
     
       this.camera.position.y += Math.sin(this.headBobTimer) * 0.03;
     } else {
+      
       // gradually return to base position when not moving
       let currentOffset = this.camera.position.y - this.baseYPosition;
       if (Math.abs(currentOffset) > 0.001) {

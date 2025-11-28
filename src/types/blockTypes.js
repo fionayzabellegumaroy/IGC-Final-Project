@@ -23,7 +23,16 @@ export const BLOCK_TYPES = {
     bottom: [1, 0],
     front: [1, 0],
     back: [1, 0]
-  }
+  },
+
+  ceiling: {
+    right: [1, 0],
+    left: [1, 0],
+    top: [1, 0],  
+    bottom: [1, 0],
+    front: [1, 0],
+    back: [1, 0]
+  },
 
   // startBlock: {
   //   right: [0, 0],
@@ -43,9 +52,3 @@ export const BLOCK_TYPES = {
   //   back: [0, 0]
   // }
 };
-
-export const BLOCK_DIMS = {
-  wall: [5, 5, 5],
-  startBlock: [5, 0.5, 5],
-  endBlock: [5, 0.5, 5]
-}

@@ -1,6 +1,6 @@
 import { BoxGeometry, ClampToEdgeWrapping, MeshLambertMaterial, NearestFilter, SRGBColorSpace, TextureLoader } from 'three';
 import atlasUrl from '../assets/textures/textures.png';
-import { BLOCK_TYPES, ATLAS_CONFIG, BLOCK_DIMS } from '../types/blockTypes';
+import { BLOCK_TYPES, ATLAS_CONFIG } from '../types/blockTypes';
 
 function getTileUVs(tileX, tileY) {
   let { tileSize, atlasWidth, atlasHeight } = ATLAS_CONFIG;
@@ -17,41 +17,6 @@ function getTileUVs(tileX, tileY) {
     uMax, vMin,  // top-right
     uMin, vMin   // top-left
   ];
-}
-
-export function createBlockGeometry(blockType) {
-  let dims = BLOCK_DIMS && BLOCK_DIMS[blockType] ? BLOCK_DIMS[blockType] : [1, 1, 1];
-  let geometry = new BoxGeometry(dims[0], dims[1], dims[2]);
-  
-  let uvs = geometry.attributes.uv.array;
-  let blockConfig = BLOCK_TYPES[blockType];
-  
-  if (!blockConfig) {
-    console.warn(`Block type ${blockType} not found in BLOCK_TYPES`);
-    return geometry;
-  }
-
-  let faceNames = ['right', 'left', 'top', 'bottom', 'front', 'back'];
-  
-  geometry.clearGroups();
-
-  for (let i = 0; i < 6; i++) {
-    geometry.addGroup(i * 6, 6, i); // startIndex, count, materialIndex
-  }
-  
-  for (let faceIndex = 0; faceIndex < 6; faceIndex++) {
-    let faceName = faceNames[faceIndex];
-    let [tileX, tileY] = blockConfig[faceName];
-    let faceUVs = getTileUVs(tileX, tileY);
-    
-    let startIdx = faceIndex * 8;
-    for (let i = 0; i < 8; i++) {
-      uvs[startIdx + i] = faceUVs[i];
-    }
-  }
-
-  geometry.attributes.uv.needsUpdate = true;
-  return geometry;
 }
 
 let textureCache = new Map();

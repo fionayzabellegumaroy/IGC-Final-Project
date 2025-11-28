@@ -1,10 +1,4 @@
-import {
-  Color,
-  PCFSoftShadowMap,
-  Raycaster,
-  Vector2,
-  Vector3,
-} from "three";
+import { Color, PCFSoftShadowMap, Raycaster, Vector2, Vector3 } from "three";
 import {
   ambientLight,
   camera,
@@ -12,21 +6,16 @@ import {
   createWall,
   endBlock,
   ground,
-  player,
-  startBlock, // removed for now; idk what to do for this yet
+  LetterPopup,
   scene,
   torch,
 } from "../components";
 // import { Resizer } from "../systems/Resizer.js";
 import { maze } from "../core";
-import {
-  Loop,
-  PlayerMovement,
-  renderer,
-  setupControls,
-} from "../systems";
-import { letter } from '../assets';
-
+import { Loop, renderer, setupControls } from "../systems";
+import React from "react";
+import { createRoot } from "react-dom/client";
+import { Player } from "./";
 export class World {
   constructor(container, options = {}) {
     this.camera = camera();
@@ -38,7 +27,6 @@ export class World {
     this.raycaster = new Raycaster();
     this.mouse = new Vector2();
     this.ambientLight = ambientLight();
-    this.player = player();
 
     let { controls, keys, dispose } = setupControls(
       this.camera,
@@ -50,44 +38,59 @@ export class World {
     this.controls = controls;
     this.keys = keys;
 
-    // reset controls
-    this.renderer.domElement.style.pointerEvents = "none"; // disable click events on the renderer canvas
-    this.controlsDispose = dispose;
-    Object.keys(this.keys).forEach((key) => {
-      // clear any held keys
-      this.keys[key] = false;
-    });
-
-    this.playerMovementInstance = new PlayerMovement(
-      this.camera,
+    this.player = new Player(
+      this.scene,
       this.controls,
-      this.keys
+      this.camera,
+      this.keys,
+      () => !this.isPopupOpen
     );
 
-    container.appendChild(this.renderer.domElement); // makes canvas visible and World attaches Three.js to div
+    this.controlsDispose = dispose;
+
+    this.container = container;
+
+    this.init();
+  }
+
+  init() {
+    this.container.appendChild(this.renderer.domElement); // makes canvas visible and World attaches Three.js to div
+
+    // reset controls
+    this.renderer.domElement.style.pointerEvents = "none"; // disable click events on the renderer canvas
+    Object.keys(this.keys).forEach((key) => {
+      this.keys[key] = false; // clear any held keys
+    });
 
     this.scene.background = new Color(0x87ceeb); // sky blue
 
-    let width = container.clientWidth;
-    let height = container.clientHeight;
+    let width = this.container.clientWidth;
+    let height = this.container.clientHeight;
 
     this.renderer.setSize(width, height);
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = PCFSoftShadowMap;
 
     this.camera.aspect = width / height;
-    // this.camera.updateProjectionMatrix();
+    this.camera.updateProjectionMatrix();
 
     // attach to camera so it moves with player
     this.camera.add(this.torchLight);
 
-    this.scene.add(
-      this.ambientLight,
-      this.camera,
-      ceiling(),
-      endBlock(),
-      this.player
-    );
+    this.scene.add(this.ambientLight, this.camera, ceiling(), endBlock());
+
+    // loop manager if needed elsewhere
+    this.loop = new Loop(this.camera, this.scene, this.renderer);
+
+    // hook up controls handling to the loop
+    this.loop.onRender = () => {
+      if (!this.isPopupOpen && this.controls.enabled) {
+        this.player.update(); // update player movement, camera, and headbobbing
+      }
+
+      // torchlight animation
+      this.torchLight.intensity = 5.0 + Math.sin(Date.now() * 0.01) * 0.3;
+    };
 
     // this.resizer = new Resizer(container, this.camera, this.renderer);
 
@@ -97,45 +100,15 @@ export class World {
     for (let i = 0; i < maze.length; i++) {
       for (let j = 0; j < maze[i].length; j++) {
         if (maze[i][j] === 1) {
-          let wall = createWall(i, j, 5/2);
+          let wall = createWall(i, j, 5 / 2);
           this.scene.add(wall);
           let secondWall = createWall(i, j, 7.5);
           this.scene.add(secondWall);
-          continue;}
-        let groundBlock = ground(i, j);
-        this.scene.add(groundBlock);
+          continue;
+        }
+        this.scene.add(ground(i,j), ceiling(i,j));
       }
     }
-
-    // async init() {
-    //     // asynchronous setup here
-    // }
-
-    // loop manager if needed elsewhere
-    this.loop = new Loop(this.camera, this.scene, this.renderer);
-
-    // hook up controls handling to the loop
-    this.loop.onRender = () => {
-      if (!this.isPopupOpen && this.controls.enabled) {
-        // only update if popup is not open
-        this.playerMovementInstance.update();
-      }
-
-      // torchlight animation
-      this.torchLight.intensity = 5.0 + Math.sin(Date.now() * 0.01) * 0.3;
-
-      // keep player model in sync with camera position
-      this.player.position.copy(this.camera.position);
-      this.player.position.y -= 0.9;
-
-      // gets camera direction to later use for player model rotation
-      const direction = new Vector3();
-      this.camera.getWorldDirection(direction);
-
-      // convert direction to Y rotation
-      const yRotation = Math.atan2(direction.x, direction.z);
-      if (this.player) this.player.rotation.y = yRotation;
-    };
   }
 
   onObjectClick(event) {
@@ -167,6 +140,7 @@ export class World {
     if (intersects.length > 0) {
       const clickedObject = intersects[0].object;
 
+      console.log("Clicked object:", clickedObject);
       // check what type of object was clicked
       if (
         clickedObject.userData &&
@@ -178,63 +152,69 @@ export class World {
     }
   }
 
-  showEndBlockPopup(endBlock) {
+  showEndBlockPopup() {
     this.createDOMPopup();
   }
 
   createDOMPopup(opts) {
-    const options = typeof opts === 'string' ? { title: opts } : (opts || {});
+    const options = typeof opts === "string" ? { title: opts } : opts || {};
     const { image = null } = options;
-
-    // default to letter image
-    const imgSrc = image || letter;
 
     // set popup state
     this.isPopupOpen = true;
 
     // disable all camera/movement controls
-    try { this.controls.unlock(); } catch (e) {}
-    this.controls.enabled = false; // Disable mouse look
+    try {
+      this.controls.unlock();
+    } catch (e) {}
+
+    this.controls.enabled = false; // disable mouse look
 
     // clear any held keys
     Object.keys(this.keys).forEach((key) => {
       this.keys[key] = false;
     });
 
-    const popup = document.createElement('div');
-    popup.style.position = 'fixed';
-    popup.style.top = '50%';
-    popup.style.left = '50%';
-    popup.style.transform = 'translate(-50%, -50%)';
-    popup.style.background = 'rgba(255,255,255,0.98)';
-    popup.style.border = '2px solid #222';
-    popup.style.padding = '12px';
-    popup.style.zIndex = '10000';
+    // create a mount node for the React popup and attach it to the world container
+    const reactMount = document.createElement("div");
+    reactMount.className = "world-popup-root";
+    (this.container || document.body).appendChild(reactMount);
 
-    const img = document.createElement('img');
-    img.src = imgSrc;
-    img.alt = 'letter';
-    img.style.display = 'block';
-    img.style.maxWidth = '90vw';
-    img.style.maxHeight = '60vh';
-    img.style.margin = '0 auto 12px';
-    popup.appendChild(img);
-
-    const closeButton = document.createElement('button');
-    closeButton.textContent = 'Close';
-    closeButton.onclick = () => {
-      popup.remove();
+    const root = createRoot(reactMount);
+    const onCloseLetter = () => {
+      try {
+        root.unmount();
+      } catch (e) {}
+      // remove only the popup mount node (do NOT remove the world container)
+      try {
+        if (reactMount.parentNode) reactMount.parentNode.removeChild(reactMount);
+      } catch (e) {}
       this.isPopupOpen = false;
-      // reenable controls when popup closes
-      try { this.controls.enabled = true; } catch (e) {}
-      if (typeof this.onExit === 'function') {
+      try {
+        this.controls.enabled = true;
+      } catch (e) {}
+    };
+
+     const onHome = () => {
+      try {
+        root.unmount();
+      } catch (e) {}
+      this.isPopupOpen = false;
+      try {
+        this.controls.enabled = true;
+      } catch (e) {}
+      if (typeof this.onExit === "function") {
         this.onExit();
       }
     };
 
-    popup.appendChild(closeButton);
-
-    document.body.appendChild(popup);
+    // render without JSX to avoid needing a JSX transform for .js files
+    root.render(
+      React.createElement(LetterPopup, {
+        onCloseLetter,
+        onHome,
+      })
+    );
   }
 
   dispose() {
@@ -262,6 +242,5 @@ export class World {
         this.scene.remove(this.ambientLight);
       }
     } catch (e) {}
-
   }
 }

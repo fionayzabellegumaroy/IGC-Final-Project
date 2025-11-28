@@ -10,9 +10,8 @@ import {
   scene,
   torch,
 } from "../components";
-// import { Resizer } from "../systems/Resizer.js";
 import { maze } from "../core";
-import { Loop, renderer, setupControls } from "../systems";
+import { Loop, renderer, Resizer, setupControls } from "../systems";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { Player } from "./";
@@ -49,6 +48,7 @@ export class World {
     this.controlsDispose = dispose;
 
     this.container = container;
+    this.resizer = new Resizer(this.container, this.camera, this.renderer);
 
     this.init();
   }
@@ -91,9 +91,6 @@ export class World {
       // torchlight animation
       this.torchLight.intensity = 5.0 + Math.sin(Date.now() * 0.01) * 0.3;
     };
-
-    // this.resizer = new Resizer(container, this.camera, this.renderer);
-
     //add later loop.updatables.push(some thing);
 
     // add walls & ground
@@ -106,7 +103,7 @@ export class World {
           this.scene.add(secondWall);
           continue;
         }
-        this.scene.add(ground(i,j), ceiling(i,j));
+        this.scene.add(ground(i,j));
       }
     }
   }

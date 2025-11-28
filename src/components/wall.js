@@ -1,5 +1,4 @@
 import { BoxGeometry, Mesh } from 'three';
-import atlasUrl from '../assets/textures/textures.png';
 import { createMaterialForType } from '../utils';
 
 export function createWall(gridX, gridZ, height) {

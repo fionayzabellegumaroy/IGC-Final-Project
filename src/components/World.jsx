@@ -1,19 +1,32 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Grid } from "@mui/material";
 import { World } from "../classes/";
+import { Mouse } from "./";
+import { regenerateMaze } from "../core/mazeGeneration.js";
 
 export let ThreeJsWorld = ({ onExit } = {}) => {
   let containerRef = useRef(null); // holds the DOM node where we mount the canvas
   let worldRef = useRef(null); // stores the World instance
+  const [resetKey, setResetKey] = useState(0);
+
+  const handleExit = () => {
+      if (typeof onExit === "function") {
+        onExit();
+      }
+
+      setResetKey((prev) => prev + 1);
+    }
+
 
   useEffect(() => {
     if (!containerRef.current) return;
 
     // regenerate maze so each world instance starts with a fresh maze
-    try { regenerateMaze(); } catch (e) {}
-
+    try { regenerateMaze(5,5); } catch (e) { console.error("Error regenerating maze:", e); }
+    // change numbers here if we want different maze sizes
+    
     // initialize world and pass the onExit callback into the World instance
-    worldRef.current = new World(containerRef.current, { onExit });
+    worldRef.current = new World(containerRef.current, { onExit: handleExit });
 
     // start the Loop system
     worldRef.current.loop.start();
@@ -26,7 +39,7 @@ export let ThreeJsWorld = ({ onExit } = {}) => {
         worldRef.current = null;
       }
     };
-  }, [onExit]); // re-run if onExit changes
+  }, [resetKey, handleExit]); // re-run if onExit changes
 
   return (
     <>
@@ -36,6 +49,7 @@ export let ThreeJsWorld = ({ onExit } = {}) => {
           ref={containerRef} // JSX renders div and after first mount, React assigns real DOM node to containerRef.current
           style={{ margin: 0, padding: 0, overflow: "hidden", width: "100%", height: "100%" }}
         />
+        <Mouse />
       </Grid>
     </>
   );

@@ -20,7 +20,7 @@ export const ground = (gridX, gridZ) => {
     gridZ * cellSize + cellSize / 2
   );
 
-   ground.userData = { 
+  ground.userData = { 
     type: 'ground', 
     gridX: gridX, 
     gridZ: gridZ 

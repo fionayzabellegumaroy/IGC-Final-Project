@@ -5,6 +5,10 @@ export function setupControls(camera, domElement, onObjectClick = null, getPopup
   const controls = new PointerLockControls(camera, domElement);
   const keys = { w: false, a: false, s: false, d: false };
 
+  // Limit vertical look angle to fix rotation issues
+  controls.maxPolarAngle = Math.PI / 2 + 1.25; 
+  controls.minPolarAngle = Math.PI / 2 - 1.0;
+  
   const onKeyDown = (e) => {
     // don't register movement keys if popup is open
     if (getPopupState && getPopupState()) return;

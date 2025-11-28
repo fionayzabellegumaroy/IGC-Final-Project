@@ -1,4 +1,6 @@
-export function checkCollision(currentPosition, movementVector, maze, cellSize = 5, padding = 0.5) {
+import { CELL_SIZE } from '../utils';
+
+export function checkCollision(currentPosition, movementVector, maze, padding = 0.5) {
 
   // compute next position
   const nextX = currentPosition.x + movementVector.x;
@@ -10,10 +12,10 @@ export function checkCollision(currentPosition, movementVector, maze, cellSize =
   const minZ = nextZ - padding;
   const maxZ = nextZ + padding;
 
-  const minRow = Math.floor(minX / cellSize);
-  const maxRow = Math.floor(maxX / cellSize);
-  const minCol = Math.floor(minZ / cellSize);
-  const maxCol = Math.floor(maxZ / cellSize);
+  const minRow = Math.floor(minX / CELL_SIZE);
+  const maxRow = Math.floor(maxX / CELL_SIZE);
+  const minCol = Math.floor(minZ / CELL_SIZE);
+  const maxCol = Math.floor(maxZ / CELL_SIZE);
 
   // check for any wall
   for (let r = minRow; r <= maxRow; r++) {

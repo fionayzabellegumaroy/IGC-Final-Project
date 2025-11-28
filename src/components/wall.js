@@ -1,9 +1,9 @@
 import { BoxGeometry, Mesh } from 'three';
 import { createMaterialForType } from '../utils';
+import { CELL_SIZE } from '../utils';
 
 export function createWall(gridX, gridZ, height) {
-  let cellSize = 5;
-  const geometry = new BoxGeometry(cellSize, cellSize, cellSize);
+  const geometry = new BoxGeometry(CELL_SIZE, CELL_SIZE, CELL_SIZE);
   const material = createMaterialForType('wall');
   const wall = new Mesh(geometry, material);
   
@@ -11,9 +11,9 @@ export function createWall(gridX, gridZ, height) {
   
 
   wall.position.set(
-    gridX * cellSize + cellSize / 2,
+    gridX * CELL_SIZE + CELL_SIZE / 2,
     height,
-    gridZ * cellSize + cellSize / 2
+    gridZ * CELL_SIZE + CELL_SIZE / 2
   );
 
 

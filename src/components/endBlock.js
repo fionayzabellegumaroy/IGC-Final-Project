@@ -1,6 +1,7 @@
 import { letter } from "../assets";
 import { BoxGeometry, Mesh, MeshLambertMaterial, TextureLoader } from "three";
 import { endPosition } from "../core";
+import { CELL_SIZE } from "../utils";
 
 export const endBlock = () => {
   let materials = [];
@@ -20,7 +21,6 @@ export const endBlock = () => {
   materials[4] = plainMaterial; // Front face
   materials[5] = plainMaterial; // Back face
 
-  let cellSize = 5;
   let aspect = 115 / 82;
   let width = 1;
   let depth = width * aspect;
@@ -30,9 +30,9 @@ export const endBlock = () => {
   );
 
   endGeometry.position.set(
-    endPosition[0] * cellSize + cellSize / 2,
+    endPosition[0] * CELL_SIZE + CELL_SIZE / 2,
     0,
-    endPosition[1] * cellSize + cellSize / 2
+    endPosition[1] * CELL_SIZE + CELL_SIZE / 2
   );
 
   endGeometry.userData = {

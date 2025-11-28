@@ -5,28 +5,26 @@ import {
   PlaneGeometry,
 } from "three";
 import { maze } from "../core";
+import { CELL_SIZE } from "../utils";
 
 export const ceiling = () => {
-  let cellSize = 5;
-  let width = maze[0].length * cellSize;
-  let depth = maze.length * cellSize;
+  let width = maze[0].length * CELL_SIZE;
+  let depth = maze.length * CELL_SIZE;
 
   let ceilingGeometry = new PlaneGeometry(width, depth);
 
   let ceilingMaterial = new MeshLambertMaterial({
     color: 0x332227,
-    roughness: 1,
-    metalness: 0.2,
     side: DoubleSide, // allows player to see plane from below
   });
 
   let ceilingMesh = new Mesh(ceilingGeometry, ceilingMaterial);
   ceilingMesh.rotation.x = Math.PI / 2; // rotate to be horizontal
 
-  ceilingMesh.position.set(width / 2, cellSize*2, depth / 2); // places ceiling at top of maze walls
+  ceilingMesh.position.set(width / 2, CELL_SIZE * 2, depth / 2); // places ceiling at top of maze walls
 
-   ceilingMesh.userData = { 
-    type: 'ceiling'
+  ceilingMesh.userData = {
+    type: "ceiling",
   };
 
   return ceilingMesh;

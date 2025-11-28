@@ -1,12 +1,11 @@
 import { BoxGeometry, Mesh } from "three";
-import { createMaterialForType } from '../utils';
+import { CELL_SIZE, createMaterialForType } from '../utils';
 
 
 export const ground = (gridX, gridZ) => {
-  let cellSize = 5;
 
   let groundGeometry = new BoxGeometry(
-    cellSize, 0.1, cellSize
+    CELL_SIZE, 0.1, CELL_SIZE
   );
 
   let groundMaterial = createMaterialForType('ground');
@@ -15,9 +14,9 @@ export const ground = (gridX, gridZ) => {
   ground.receiveShadow = true;  
 
   ground.position.set(
-    gridX * cellSize + cellSize / 2,
+    gridX * CELL_SIZE + CELL_SIZE / 2,
     -0.05,
-    gridZ * cellSize + cellSize / 2
+    gridZ * CELL_SIZE + CELL_SIZE / 2
   );
 
   ground.userData = { 

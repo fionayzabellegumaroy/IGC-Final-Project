@@ -12,13 +12,18 @@ export class Loop {
   }
 
   start() {
-    this.renderer.setAnimationLoop(() => { // start the animation loop
-      this.tick(); //update animations
+    this.renderer.setAnimationLoop(() => {
+      // start the animation loop
+
+      const delta = clock.getDelta(); // get time elapsed since last frame
       
-      if (this.onRender) { // call world-specific render logic -> since loop initialized in World, it is truthy
-        this.onRender(); //calls function World assigned (handleControls)
+      this.tick(delta); //update animations
+
+      if (this.onRender) {
+        // call world-specific render logic -> since loop initialized in World, it is truthy
+        this.onRender(delta); //calls function World assigned (handleControls)
       }
-      
+
       // render a frame
       this.renderer.render(this.scene, this.camera);
     });
@@ -28,9 +33,7 @@ export class Loop {
     this.renderer.setAnimationLoop(null); // stop the animation loop
   }
 
-  tick() { // manages animations
-    const delta = clock.getDelta(); //call delta once per frame 
-
+  tick(delta) {
     // update all objects
     for (let object of this.updatables) {
       object.tick(delta);

@@ -123,9 +123,9 @@ export class World {
     this.loop = new Loop(this.camera, this.scene, this.renderer);
 
     // hook up controls handling to the loop
-    this.loop.onRender = () => {
+    this.loop.onRender = (delta) => {
       if (!this.isPopupOpen && this.controls.enabled) {
-        this.player.update(); // update player movement, camera, and headbobbing
+        this.player.update(delta); // update player movement, camera, and headbobbing
       }
 
       const direction = new Vector3();

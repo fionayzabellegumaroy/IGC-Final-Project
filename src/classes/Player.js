@@ -1,7 +1,4 @@
 import {
-  BoxGeometry,
-  Mesh,
-  MeshStandardMaterial,
   Vector3,
 } from "three";
 
@@ -18,7 +15,6 @@ export class Player {
     this.camera = camera;
     this.keys = keys;
     this.moveSpeed = 20.0;
-    this.delta = 0.016;
     this.collisionEnabledFn = collisionEnabledFn;
     this.position = this.camera.position || new Vector3();
     this.rotation = new Vector3();
@@ -27,15 +23,15 @@ export class Player {
     this.isMoving = false; 
   }
 
-  update() {
+  update(delta) {
     if (!this.controls || !this.controls.isLocked || !this.keys) return;
 
-    this.updateMovement();
-    this.updateCamera();
+    this.updateMovement(delta);
+    this.updateCamera(delta);
   }
 
-  updateMovement() {
-    let step = this.moveSpeed * this.delta;
+  updateMovement(delta) {
+    let step = this.moveSpeed * delta;
     this.isMoving = false; // Reset each frame
 
     if (this.keys.w) {
@@ -56,9 +52,9 @@ export class Player {
     }
   }
 
-  updateCamera() {
+  updateCamera(delta) {
     if (this.isMoving) {
-      this.headBobTimer += this.delta * 8;
+      this.headBobTimer += delta * 8;
     
       this.camera.position.y += Math.sin(this.headBobTimer) * 0.03;
     } else {

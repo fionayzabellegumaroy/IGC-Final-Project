@@ -16,12 +16,14 @@ function App() {
     bgAudioRef.current = audio;
 
     return () => {
-      try {bgAudioRef.current.pause();} catch(e) {}
+      try {
+        bgAudioRef.current.pause();
+      } catch (e) {}
       bgAudioRef.current = null;
-    }
+    };
   }, []);
 
-  bgAudioRef.current?.play().catch(() => {}); 
+  bgAudioRef.current?.play().catch(() => {});
   return (
     <Grid
       id="everything"

@@ -25,7 +25,7 @@ export const endBlock = () => {
   let width = 1;
   let depth = width * aspect;
   let endGeometry = new Mesh(
-    new BoxGeometry(width, 0.1, depth), //texture is 82px x 115px, adjust size accordingly
+    new BoxGeometry(width * 5, 0.1, depth * 5), 
     materials
   );
 

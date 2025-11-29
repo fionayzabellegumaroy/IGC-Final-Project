@@ -11,11 +11,9 @@ export let ThreeJsWorld = ({ onExit } = {}) => {
   const handleExit = () => {
       if (typeof onExit === "function") {
         try { onExit(); } catch (e) { console.error('Error calling app onExit', e); }
-        // If the host app handled exit (e.g. navigated away), don't attempt to reset the world here.
         return;
       }
 
-      // No app-level onExit provided — reset the world instance in-place
       setResetKey((prev) => prev + 1);
     }
 

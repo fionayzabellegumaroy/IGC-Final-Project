@@ -1,3 +1,5 @@
+import { MAZE_COLS, MAZE_ROWS } from "../utils";
+
 function generateMazePrims(width, height) {
     let maze = Array(height).fill(null).map(() => Array(width).fill(1));
 
@@ -116,6 +118,6 @@ function initMaze(width, height) {
     return { maze, startPosition, endPosition };
 }
 
-initMaze(5, 5);
+initMaze(MAZE_ROWS, MAZE_COLS);
 
 export { initMaze as regenerateMaze };

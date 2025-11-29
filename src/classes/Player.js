@@ -17,7 +17,7 @@ export class Player {
     this.modelContainer = null;
     this.camera = camera;
     this.keys = keys;
-    this.moveSpeed = 8.0;
+    this.moveSpeed = 20.0;
     this.delta = 0.016;
     this.collisionEnabledFn = collisionEnabledFn;
     this.position = this.camera.position || new Vector3();

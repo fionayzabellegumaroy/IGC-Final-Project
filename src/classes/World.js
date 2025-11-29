@@ -8,11 +8,14 @@ import {
   ground,
   playerModel,
   LetterPopup,
+  Mouse,
   rightArmTorch,
+  Timer,
+  Result,
   scene,
 } from "../components";
 import { maze } from "../core";
-import { CELL_SIZE } from "../utils";
+import { CELL_SIZE, TIME_LIMIT } from "../utils";
 import { Loop, renderer, Resizer, setupControls } from "../systems";
 import React from "react";
 import { createRoot } from "react-dom/client";
@@ -28,6 +31,11 @@ export class World {
     this.raycaster = new Raycaster();
     this.mouse = new Vector2();
     this.ambientLight = ambientLight();
+    this.timeElapsed = 0;
+    this.timeTotal = TIME_LIMIT; // in seconds
+    this.timeStarted = -1;
+    this.updateTime = true;
+    this.openedLetter = false;
 
     let { controls, keys, dispose } = setupControls(
       this.camera,
@@ -68,6 +76,9 @@ export class World {
     let width = this.container.clientWidth;
     let height = this.container.clientHeight;
 
+    this.createTimerComponent();
+    this.createPointerComponent();
+
     this.renderer.setSize(width, height);
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = PCFSoftShadowMap;
@@ -100,15 +111,6 @@ export class World {
       this.updateArmPosition()
     );
 
-    // // idk if this is working
-    // this.fireMaterial = null;
-
-    // this.armTorchModel.traverse((child) => {
-    //   if (child.isMesh && child.material.emissive && child.name === "FireMaterial") {
-    //     this.fireMaterial = child.material;
-    //   }
-    // });
-
     this.scene.add(
       this.ambientLight,
       this.camera,
@@ -126,15 +128,10 @@ export class World {
         this.player.update(); // update player movement, camera, and headbobbing
       }
 
-      // Get camera direction for rotation
       const direction = new Vector3();
       this.camera.getWorldDirection(direction);
-
-      // Convert direction to Y rotation
       const yRotation = Math.atan2(direction.x, direction.z);
       this.playerModel.rotation.y = yRotation;
-
-      // Position the model with offset relative to camera direction
       this.playerModel.position.copy(this.camera.position);
       this.playerModel.position.y = this.camera.position.y - 4;
 
@@ -142,23 +139,20 @@ export class World {
       direction.normalize();
       this.playerModel.position.add(direction.multiplyScalar(-1)); // negative = backward
 
-      // if (this.fireMaterial) {
-      //   this.fireMaterial.emissiveIntensity =
-      //     0.8 + Math.sin(Date.now() * 0.005) * 0.3;
-      // }
-
-      // // idk if this is right
+      // move this to right arm update
       this.armTorchModel.traverse((child) => {
         let flickerAmount = Math.sin(Date.now() * 0.01) * 0.3; // 0 to 0.3 variation
 
         if (child.name === "mainTorchLight") {
-          child.intensity = 20.0 * (1 + flickerAmount); 
-        } 
-        else {
-          child.intensity = 3.0 * (1 + flickerAmount); 
+          child.intensity = 20.0 * (1 + flickerAmount);
+        } else {
+          child.intensity = 3.0 * (1 + flickerAmount);
         }
       });
+
+      this.updateTimeElapsed();
     };
+
     //add later loop.updatables.push(some thing);
 
     // add walls & ground
@@ -174,6 +168,42 @@ export class World {
         this.scene.add(ground(i, j));
       }
     }
+  }
+
+  createTimerComponent() {
+    this.timeStarted = Date.now();
+
+    this.timerMountDiv = document.createElement("div");
+    this.timerMountDiv.id = "timer-mount";
+    this.container.appendChild(this.timerMountDiv);
+
+    this.timerRoot = createRoot(this.timerMountDiv);
+    this.timerRoot.render(
+      React.createElement(Timer, { timeStarted: this.timeStarted })
+    );
+  }
+
+  createPointerComponent() {
+    this.pointerMountDiv = document.createElement("div");
+    this.pointerMountDiv.id = "pointer-mount";
+    this.container.appendChild(this.pointerMountDiv);
+
+    this.pointerRoot = createRoot(this.pointerMountDiv);
+    this.pointerRoot.render(React.createElement(Mouse, {}));
+  }
+  
+  disableControls() {
+    // disable all camera/movement controls
+    try {
+      this.controls.unlock();
+    } catch (e) {}
+
+    this.controls.enabled = false; // disable mouse look
+
+    // clear any held keys
+    Object.keys(this.keys).forEach((key) => {
+      this.keys[key] = false;
+    });
   }
 
   onObjectClick(event) {
@@ -206,81 +236,144 @@ export class World {
       const clickedObject = intersects[0].object;
 
       console.log("Clicked object:", clickedObject);
+
       // check what type of object was clicked
       if (
         clickedObject.userData &&
         clickedObject.userData.type === "endBlock"
       ) {
-        this.showEndBlockPopup(clickedObject);
-        this.controls.unlock();
+        this.showLetter();
+      }
+    }
+  } 
+  
+  removeComponent(mount, root) {
+    if (root) {
+      try {
+        root.unmount();
+        root = null;
+      } catch (e) {
+        console.error("Error unmounting root:", e);
+      }
+    }
+
+    if (mount && mount.parentNode) {
+      try {
+        mount.parentNode.removeChild(mount);
+      } catch (e) {
+        console.error("Error removing mount div:", e);
       }
     }
   }
 
-  showEndBlockPopup() {
-    this.createDOMPopup();
-  }
+  showResult(win) {
+    this.updateTime = false;
 
-  createDOMPopup(opts) {
-    const options = typeof opts === "string" ? { title: opts } : opts || {};
-    const { image = null } = options;
+    if (this.timerRoot) {
+      this.removeComponent(this.timerMountDiv, this.timerRoot);
+      this.timerMountDiv = null;
+      this.timerRoot = null;
+    }
 
-    // set popup state
+    if (this.pointerRoot) {
+      this.removeComponent(this.pointerMountDiv, this.pointerRoot);
+      this.pointerMountDiv = null;
+      this.pointerRoot = null;
+    }
+
+    this.disableControls();
     this.isPopupOpen = true;
 
-    // disable all camera/movement controls
-    try {
-      this.controls.unlock();
-    } catch (e) {}
+    const resultMountDiv = document.createElement("div");
+    this.container.appendChild(resultMountDiv);
+    const resultRoot = createRoot(resultMountDiv);
 
-    this.controls.enabled = false; // disable mouse look
-
-    // clear any held keys
-    Object.keys(this.keys).forEach((key) => {
-      this.keys[key] = false;
-    });
-
-    // create a mount node for the React popup and attach it to the world container
-    const reactMount = document.createElement("div");
-    reactMount.className = "world-popup-root";
-    (this.container || document.body).appendChild(reactMount);
-
-    const root = createRoot(reactMount);
-    const onCloseLetter = () => {
-      try {
-        root.unmount();
-      } catch (e) {}
-      // remove only the popup mount node (do NOT remove the world container)
-      try {
-        if (reactMount.parentNode)
-          reactMount.parentNode.removeChild(reactMount);
-      } catch (e) {}
-      this.isPopupOpen = false;
-      try {
-        this.controls.enabled = true;
-      } catch (e) {}
-    };
-
-    const onHome = () => {
-      try {
-        root.unmount();
-      } catch (e) {}
+    const onClose = () => {
+      this.removeComponent(resultMountDiv, resultRoot);
       this.isPopupOpen = false;
       try {
         this.controls.enabled = true;
       } catch (e) {}
       if (typeof this.onExit === "function") {
-        this.onExit();
+        try {
+          this.onExit();
+          return;
+        } catch (e) {
+          console.error("Error calling this.onExit", e);
+        }
       }
     };
 
-    // render without JSX to avoid needing a JSX transform for .js files
-    root.render(
+    resultRoot.render(
+      React.createElement(Result, {
+        onClose,
+        sad: this.openedLetter,
+        timeElapsed: this.timeElapsed,
+        win: win,
+      })
+    );
+  }
+
+  showLetter() {
+    this.isPopupOpen = true;
+
+    this.disableControls();
+
+    this.removeComponent(this.pointerMountDiv, this.pointerRoot);
+    this.pointerMountDiv = null;
+    this.pointerRoot = null;
+
+    this.letterMountDiv = document.createElement("div");
+    this.container.appendChild(this.letterMountDiv);
+
+    this.letterRoot = createRoot(this.letterMountDiv);
+
+    const onCloseLetter = () => {
+      this.removeComponent(this.letterMountDiv, this.letterRoot);
+      this.letterMountDiv = null;
+      this.letterRoot = null;
+      this.isPopupOpen = false;
+      this.openedLetter = true; // set it here so that if time runs out while in letter, player just ran out of time (not necessarily closing the letter)
+      try {
+        this.controls.enabled = true;
+      } catch (e) {}
+      this.createPointerComponent();
+    };
+
+    const onHome = () => {
+      this.removeComponent(this.letterMountDiv, this.letterRoot);
+      this.letterMountDiv = null;
+      this.letterRoot = null;
+      this.isPopupOpen = false;
+      try {
+        this.controls.enabled = true;
+      } catch (e) {}
+      this.openedLetter = false; // reset opened letter state
+      this.showResult(true);
+    };
+
+    this.letterRoot.render(
       React.createElement(LetterPopup, {
         onCloseLetter,
         onHome,
       })
     );
+  }
+
+  updateTimeElapsed() {
+    if (this.updateTime) {
+      this.timeElapsed = (Date.now() - this.timeStarted) / 1000;
+    }
+
+    if (this.timeElapsed >= this.timeTotal && this.updateTime) {
+      this.updateTime = false;
+      if (this.isPopupOpen){
+        this.removeComponent(this.letterMountDiv, this.letterRoot);
+        this.letterMountDiv = null;
+        this.letterRoot = null;
+      }
+      this.showResult(false);
+    }
   }
 
   dispose() {

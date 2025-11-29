@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Grid } from "@mui/material";
 import { World } from "../classes/";
-import { Mouse } from "./";
 import { regenerateMaze } from "../core/mazeGeneration.js";
 
 export let ThreeJsWorld = ({ onExit } = {}) => {
@@ -11,9 +10,12 @@ export let ThreeJsWorld = ({ onExit } = {}) => {
 
   const handleExit = () => {
       if (typeof onExit === "function") {
-        onExit();
+        try { onExit(); } catch (e) { console.error('Error calling app onExit', e); }
+        // If the host app handled exit (e.g. navigated away), don't attempt to reset the world here.
+        return;
       }
 
+      // No app-level onExit provided — reset the world instance in-place
       setResetKey((prev) => prev + 1);
     }
 
@@ -49,7 +51,6 @@ export let ThreeJsWorld = ({ onExit } = {}) => {
           ref={containerRef} // JSX renders div and after first mount, React assigns real DOM node to containerRef.current
           style={{ margin: 0, padding: 0, overflow: "hidden", width: "100%", height: "100%" }}
         />
-        <Mouse />
       </Grid>
     </>
   );

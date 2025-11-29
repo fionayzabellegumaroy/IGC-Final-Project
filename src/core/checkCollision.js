@@ -1,6 +1,6 @@
 import { CELL_SIZE } from '../utils';
 
-export function checkCollision(currentPosition, movementVector, maze, padding = 0.5) {
+export function checkCollision(currentPosition, movementVector, maze, padding = 10.6) {
 
   // compute next position
   const nextX = currentPosition.x + movementVector.x;

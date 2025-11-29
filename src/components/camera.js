@@ -3,7 +3,7 @@ import { startPosition } from "../core";
 import { CELL_SIZE, EYE_HEIGHT } from "../utils";
 
 export const camera = () => {
-  let camera = new PerspectiveCamera(65, 0.9, 0.1, 100);
+  let camera = new PerspectiveCamera(65, 0.9, 0.1, 1000);
 
 
   camera.position.set(

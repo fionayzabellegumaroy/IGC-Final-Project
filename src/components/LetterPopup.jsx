@@ -51,7 +51,7 @@ export default function LetterPopup({ onCloseLetter, onHome }) {
             width: "40%",
           }}
         >
-          <Button onClick={onCloseLetter} sx={{ color: "#373532" }}>
+          <Button onClick={onCloseLetter} sx={{ color: "#373532", width: "100%" }}>
             Close
           </Button>
         </Grid>
@@ -65,7 +65,7 @@ export default function LetterPopup({ onCloseLetter, onHome }) {
             width: "40%",
           }}
         >
-          <Button onClick={onHome} sx={{ color: "#373532" }}>
+          <Button onClick={onHome} sx={{ color: "#373532", width: "100%" }}>
             Go Home
           </Button>
         </Grid>

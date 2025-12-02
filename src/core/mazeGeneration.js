@@ -110,7 +110,7 @@ function printMaze(maze) {
 
 export let maze, startPosition, endPosition;
 
-function initMaze(width, height) {
+function initMaze(width = MAZE_ROWS, height = MAZE_COLS) {
     const result = generateMazePrims(width, height);
     maze = result.maze;
     startPosition = result.startPosition;
@@ -118,6 +118,7 @@ function initMaze(width, height) {
     return { maze, startPosition, endPosition };
 }
 
-initMaze(MAZE_ROWS, MAZE_COLS);
+// initialize with defaults
+initMaze();
 
 export { initMaze as regenerateMaze };

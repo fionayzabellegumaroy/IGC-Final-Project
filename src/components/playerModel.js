@@ -4,7 +4,7 @@ export const playerModel = () => {
   let player = new Group();
 
   let torsoGeometry = new BoxGeometry(2.5, 2.5, 0.5);
-  let torsoMaterial = new MeshLambertMaterial({ color: 0xF7F1ED, roughness: 0.8 });
+  let torsoMaterial = new MeshLambertMaterial({ color: 0xF7F1ED });
   let torsoMesh = new Mesh(torsoGeometry, torsoMaterial);
 
   let legGeometry = new BoxGeometry(0.75, 3, 0.4);

@@ -29,12 +29,6 @@ function App() {
     };
   }, []);
 
-  useEffect(() => {
-    if (bgAudioRef.current) {
-      bgAudioRef.current.play().catch(() => {});
-    }
-  }, []);
-
   const handleZoomIn = () => {
     setZoom(true);
 
@@ -50,7 +44,7 @@ function App() {
     setTimeout(() => {
       try {
         setStart(1);
-        // setWorldMounted(true); // 
+        // setWorldMounted(true); //
         regenerateMaze();
         setZoom(false);
       } catch (e) {
@@ -176,6 +170,11 @@ function App() {
             <img
               id="yes-img"
               onClick={() => {
+                if (bgAudioRef.current) {
+                  bgAudioRef.current.play().catch((e) => {
+                    console.error("Audio play failed:", e);
+                  });
+                }
                 if (isFirst) {
                   // setZoom(true);
                   handleZoomIn();

@@ -161,8 +161,8 @@ function App() {
                 position: "fixed",
                 top: "50%",
                 transform: !zoom
-                  ? "translate(-50%, -65%) scale(1)"
-                  : "translate(-50%, -65%) scale(0)",
+                  ? "translate(-50%, -50%) scale(1)"
+                  : "translate(-50%, -50%) scale(0)",
                 transition: "transform 0.8s ease, opacity 0.8s ease",
                 // width: "568px"
               }}

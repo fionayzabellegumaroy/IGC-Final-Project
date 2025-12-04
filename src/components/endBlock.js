@@ -3,16 +3,13 @@ import { BoxGeometry, Mesh, MeshLambertMaterial, TextureLoader } from "three";
 import { endPosition } from "../core";
 import { CELL_SIZE } from "../utils";
 
+let textureLoader = new TextureLoader();
+let texture = textureLoader.load(letter);
+let texturedMaterial = new MeshLambertMaterial({ color: 0xffffff,  map: texture });
+let plainMaterial = new MeshLambertMaterial({ color: 0xdab980 });
+
 export const endBlock = () => {
   let materials = [];
-  let textureLoader = new TextureLoader();
-  let texture = textureLoader.load(letter);
-  let texturedMaterial = new MeshLambertMaterial({
-    color: 0xffffff,
-    map: texture
-  });
-
-  let plainMaterial = new MeshLambertMaterial({ color: 0xdab980 });
 
   materials[0] = plainMaterial; // Right face
   materials[1] = plainMaterial; // Left face
@@ -24,10 +21,7 @@ export const endBlock = () => {
   let aspect = 115 / 82;
   let width = 1;
   let depth = width * aspect;
-  let endGeometry = new Mesh(
-    new BoxGeometry(width * 5, 0.1, depth * 5), 
-    materials
-  );
+  let endGeometry = new Mesh( new BoxGeometry(width * 5, 0.1, depth * 5), materials);
 
   endGeometry.position.set(
     endPosition[0] * CELL_SIZE + CELL_SIZE / 2,

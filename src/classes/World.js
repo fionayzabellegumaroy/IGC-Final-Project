@@ -191,7 +191,7 @@ export class World {
     this.pointerRoot = createRoot(this.pointerMountDiv);
     this.pointerRoot.render(React.createElement(Mouse, {}));
   }
-  
+
   disableControls() {
     // disable all camera/movement controls
     try {
@@ -245,8 +245,8 @@ export class World {
         this.showLetter();
       }
     }
-  } 
-  
+  }
+
   removeComponent(mount, root) {
     if (root) {
       try {
@@ -367,7 +367,7 @@ export class World {
 
     if (this.timeElapsed >= this.timeTotal && this.updateTime) {
       this.updateTime = false;
-      if (this.isPopupOpen){
+      if (this.isPopupOpen) {
         this.removeComponent(this.letterMountDiv, this.letterRoot);
         this.letterMountDiv = null;
         this.letterRoot = null;
@@ -387,12 +387,138 @@ export class World {
       this.controlsDispose = null;
     }
 
-    this.renderer.dispose();
+    if (this.loop) {
+      try {
+        this.loop.stop();
+      } catch (e) {}
+      this.loop = null;
+    }
 
-    try {
-      if (this.ambientLight && this.scene) {
-        this.scene.remove(this.ambientLight);
+    // dispose resizer
+    if (this.resizer && typeof this.resizer.dispose === "function") {
+      try {
+        this.resizer.dispose();
+      } catch (e) {}
+      this.resizer = null;
+    }
+
+    // unmount any mounted react roots and remove mount nodes
+    const safeRemoveRoot = (mountDiv, root) => {
+      if (root) {
+        try {
+          root.unmount();
+        } catch (e) {
+          console.error(e);
+        }
       }
-    } catch (e) {}
+      if (mountDiv && mountDiv.parentNode) {
+        try {
+          mountDiv.parentNode.removeChild(mountDiv);
+        } catch (e) {}
+      }
+    };
+    safeRemoveRoot(this.timerMountDiv, this.timerRoot);
+    safeRemoveRoot(this.pointerMountDiv, this.pointerRoot);
+    safeRemoveRoot(this.letterMountDiv, this.letterRoot);
+    safeRemoveRoot(this.resultMountDiv, this.resultRoot);
+
+    // remove canvas from DOM
+    if (
+      this.renderer &&
+      this.renderer.domElement &&
+      this.renderer.domElement.parentNode
+    ) {
+      try {
+        this.renderer.domElement.parentNode.removeChild(
+          this.renderer.domElement
+        );
+      } catch (e) {}
+    }
+
+    // remove objects added to the scene
+    try {
+      if (this.armTorchModel && this.camera)
+        this.camera.remove(this.armTorchModel);
+      if (this.ambientLight && this.scene) this.scene.remove(this.ambientLight);
+      if (this.camera && this.scene) this.scene.remove(this.camera);
+      if (this.ceilingObj) this.scene.remove(this.ceilingObj);
+      if (this.endBlockObj) this.scene.remove(this.endBlockObj);
+      if (this.playerModel) this.scene.remove(this.playerModel);
+
+      if (Array.isArray(this.walls)) {
+        this.walls.forEach((w) => this.scene.remove(w));
+        this.walls = null;
+      }
+      if (Array.isArray(this.grounds)) {
+        this.grounds.forEach((g) => this.scene.remove(g));
+        this.grounds = null;
+      }
+    } catch (e) {
+      console.warn("Error removing scene children:", e);
+    }
+
+    // dispose materials and textures by traversing the scene
+    if (this.scene) {
+      this.scene.traverse((obj) => {
+        if (obj.isMesh) {
+          if (obj.geometry) {
+            try {
+              obj.geometry.dispose();
+            } catch (e) {}
+          }
+          const disposeMaterial = (mat) => {
+            if (!mat) return;
+            // textures
+            [
+              "map",
+              "alphaMap",
+              "aoMap",
+              "bumpMap",
+              "emissiveMap",
+              "envMap",
+              "lightMap",
+              "metalnessMap",
+              "normalMap",
+              "roughnessMap",
+            ].forEach((k) => {
+              if (mat[k] && mat[k].dispose) {
+                try {
+                  mat[k].dispose();
+                } catch (e) {}
+              }
+            });
+            // material itself
+            if (mat.dispose) {
+              try {
+                mat.dispose();
+              } catch (e) {}
+            }
+          };
+          if (Array.isArray(obj.material)) {
+            obj.material.forEach(disposeMaterial);
+          } else {
+            disposeMaterial(obj.material);
+          }
+        }
+      });
+    }
+
+    // clear other references from constructor
+    this.scene = null;
+    this.camera = null;
+    this.renderer = null;
+    this.player = null;
+    this.ambientLight = null;
+    this.armTorchModel = null;
+    this.timerRoot = null;
+    this.timerMountDiv = null;
+    this.pointerRoot = null;
+    this.pointerMountDiv = null;
+    this.letterRoot = null;
+    this.letterMountDiv = null;
+    this.resultRoot = null;
+    this.resultMountDiv = null;
+    this.keys = null;
+    this.raycaster = null;
   }
 }

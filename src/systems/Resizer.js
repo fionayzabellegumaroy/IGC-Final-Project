@@ -22,4 +22,8 @@ export class Resizer {
       this.onResize(width, height);
     }
   }
+
+  dispose() {
+    window.removeEventListener('resize', () => this.setSize());
+  }
 }

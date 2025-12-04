@@ -34,7 +34,6 @@ export let ThreeJsWorld = ({ onExit } = {}) => {
     // cleanup function
     return () => {
       if (worldRef.current) {
-        try { worldRef.current.loop.stop(); } catch (e) {}
         try { worldRef.current.dispose(); } catch (e) {}
         worldRef.current = null;
       }

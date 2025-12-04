@@ -8,7 +8,7 @@ For now, this uses pointer lock controls, which means that you have to click/dou
 # Instructions to Run Program
 __Install Node:__
 <br>"node -v" to see if node is installed
-<br> if not, google how to install node :)
+<br> if not, install node
 
 __To Run Program:__
 <br>npm install

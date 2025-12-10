@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Grid } from "@mui/material";
 import { World } from "../classes/";
 import { regenerateMaze } from "../core/mazeGeneration.js";
@@ -8,23 +8,29 @@ export let ThreeJsWorld = ({ onExit } = {}) => {
   let worldRef = useRef(null); // stores the World instance
   const [resetKey, setResetKey] = useState(0);
 
-  const handleExit = () => {
-      if (typeof onExit === "function") {
-        try { onExit(); } catch (e) { console.error('Error calling app onExit', e); }
-        return;
+  const handleExit = useCallback(() => {
+    if (typeof onExit === "function") {
+      try {
+        onExit();
+      } catch (e) {
+        console.error("Error calling app onExit", e);
       }
-
-      setResetKey((prev) => prev + 1);
+      return;
     }
-
+    setResetKey((prev) => prev + 1);
+  }, [onExit]);
 
   useEffect(() => {
     if (!containerRef.current) return;
 
     // regenerate maze so each world instance starts with a fresh maze
-    try { regenerateMaze(5,5); } catch (e) { console.error("Error regenerating maze:", e); }
+    try {
+      regenerateMaze(5, 5);
+    } catch (e) {
+      console.error("Error regenerating maze:", e);
+    }
     // change numbers here if we want different maze sizes
-    
+
     // initialize world and pass the onExit callback into the World instance
     worldRef.current = new World(containerRef.current, { onExit: handleExit });
 
@@ -34,7 +40,9 @@ export let ThreeJsWorld = ({ onExit } = {}) => {
     // cleanup function
     return () => {
       if (worldRef.current) {
-        try { worldRef.current.dispose(); } catch (e) {}
+        try {
+          worldRef.current.dispose();
+        } catch (e) {}
         worldRef.current = null;
       }
     };
@@ -42,11 +50,21 @@ export let ThreeJsWorld = ({ onExit } = {}) => {
 
   return (
     <>
-      <Grid container id="world-container" sx={{ height: "100vh", position: "absolute", width: "100vw" }}>
+      <Grid
+        container
+        id="world-container"
+        sx={{ height: "100vh", position: "absolute", width: "100vw" }}
+      >
         <Grid
           id="world"
           ref={containerRef} // JSX renders div and after first mount, React assigns real DOM node to containerRef.current
-          style={{ margin: 0, padding: 0, overflow: "hidden", width: "100%", height: "100%" }}
+          style={{
+            margin: 0,
+            padding: 0,
+            overflow: "hidden",
+            width: "100%",
+            height: "100%",
+          }}
         />
       </Grid>
     </>

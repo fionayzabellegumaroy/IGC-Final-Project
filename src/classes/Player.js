@@ -28,11 +28,17 @@ export class Player {
 
     this.updateMovement(delta);
     this.updateCamera(delta);
+
+    if (this.isMoving) {
+      this.framesSinceMove = 0;
+    } else {
+      this.framesSinceMove++;
+    }
   }
 
   updateMovement(delta) {
     let step = this.moveSpeed * delta;
-    this.isMoving = false; // Reset each frame
+    this.isMoving = false;
 
     if (this.keys.w) {
       this.moveForward(step);
@@ -55,13 +61,11 @@ export class Player {
   updateCamera(delta) {
     if (this.isMoving) {
       this.headBobTimer += delta * 8;
-    
       this.camera.position.y += Math.sin(this.headBobTimer) * 0.03;
     } else {
-
       // gradually return to base position when not moving
       let currentOffset = this.camera.position.y - this.baseYPosition;
-      if (Math.abs(currentOffset) > 0.001) {
+      if (Math.abs(currentOffset) - this.baseYPosition > 0.001) {
         this.camera.position.y -= currentOffset * 0.1;
       } else {
         this.camera.position.y = this.baseYPosition;

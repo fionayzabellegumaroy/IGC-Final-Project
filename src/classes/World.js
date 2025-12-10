@@ -1,4 +1,4 @@
-import { Color, PCFSoftShadowMap, Raycaster, Vector2, Vector3 } from "three";
+import { Color, Raycaster, Vector2, Vector3 } from "three";
 import {
   ambientLight,
   camera,
@@ -15,7 +15,7 @@ import {
   scene,
 } from "../components";
 import { maze } from "../core";
-import { CELL_SIZE, TIME_LIMIT } from "../utils";
+import { CELL_SIZE, GeometryMerger, TIME_LIMIT } from "../utils";
 import { Loop, renderer, Resizer, setupControls } from "../systems";
 import React from "react";
 import { createRoot } from "react-dom/client";
@@ -80,8 +80,6 @@ export class World {
     this.createPointerComponent();
 
     this.renderer.setSize(width, height);
-    this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = PCFSoftShadowMap;
 
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
@@ -106,6 +104,16 @@ export class World {
 
     this.updateArmPosition();
     this.camera.add(this.armTorchModel);
+
+    this.mainTorchLight = null;
+    this.secondaryTorchLights = [];
+    this.armTorchModel.traverse((child) => {
+      if (child.name === "mainTorchLight") {
+        this.mainTorchLight = child;
+      } else if (child.isLight) {
+        this.secondaryTorchLights.push(child);
+      }
+    });
 
     this.resizer = new Resizer(this.container, this.camera, this.renderer, () =>
       this.updateArmPosition()
@@ -139,21 +147,18 @@ export class World {
       direction.normalize();
       this.playerModel.position.add(direction.multiplyScalar(-1)); // negative = backward
 
-      // move this to right arm update
-      this.armTorchModel.traverse((child) => {
-        let flickerAmount = Math.sin(Date.now() * 0.01) * 0.3; // 0 to 0.3 variation
+      const flickerAmount = Math.sin(Date.now() * 0.01) * 0.3;
 
-        if (child.name === "mainTorchLight") {
-          child.intensity = 20.0 * (1 + flickerAmount);
-        } else {
-          child.intensity = 3.0 * (1 + flickerAmount);
-        }
-      });
+      if (this.mainTorchLight) {
+        this.mainTorchLight.intensity = 20.0 * (1 + flickerAmount);
+      }
+
+      for (let light of this.secondaryTorchLights) {
+        light.intensity = 3.0 * (1 + flickerAmount);
+      }
 
       this.updateTimeElapsed();
     };
-
-    //add later loop.updatables.push(some thing);
 
     // add walls & ground
     for (let i = 0; i < maze.length; i++) {
@@ -166,6 +171,64 @@ export class World {
         this.scene.add(ground(i, j));
       }
     }
+
+    // handle pause/resume if out of tab
+    this.tabChange = () => {
+      if (document.hidden) {
+        if (this.loop) {
+          this.loop.pause();
+        }
+        this.updateTime = false;
+      } else {
+        if (this.loop) {
+          this.loop.resume();
+        }
+        this.updateTime = true; 
+        this.timeStarted = Date.now() - this.timeElapsed * 1000;
+      }
+    };
+
+    document.addEventListener("tabChange", this.tabChange);
+
+    // count all meshes for merging later
+    let directChildren = 0;
+    let totalMeshes = 0;
+    let meshTypes = {};
+
+    this.scene.children.forEach((child) => {
+      if (child.isMesh) {
+        directChildren++;
+        const type = child.userData?.type || "unknown";
+        meshTypes[type] = (meshTypes[type] || 0) + 1;
+      }
+    });
+
+    this.scene.traverse((obj) => {
+      if (obj.isMesh) {
+        totalMeshes++;
+      }
+    });
+
+    let wallCount = 0;
+    let groundCount = 0;
+    for (let i = 0; i < maze.length; i++) {
+      for (let j = 0; j < maze[i].length; j++) {
+        if (maze[i][j] === 1) {
+          wallCount += 2; 
+        } else {
+          groundCount += 1;
+        }
+      }
+    }
+
+    GeometryMerger.mergeMeshes(this.scene, {
+      excludeObjects: [
+        this.playerModel,
+        this.armTorchModel,
+        this.camera
+      ],
+      excludeTypes: ["endBlock"],
+    });
   }
 
   createTimerComponent() {
@@ -442,7 +505,13 @@ export class World {
       if (this.ceilingObj) this.scene.remove(this.ceilingObj);
       if (this.endBlockObj) this.scene.remove(this.endBlockObj);
       if (this.playerModel) this.scene.remove(this.playerModel);
-
+      if (this.tabChange) {
+        document.removeEventListener(
+          "tabChange",
+          this.tabChange
+        );
+        this.tabChange = null;
+      }
       if (Array.isArray(this.walls)) {
         this.walls.forEach((w) => this.scene.remove(w));
         this.walls = null;

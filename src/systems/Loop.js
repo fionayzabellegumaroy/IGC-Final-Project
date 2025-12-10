@@ -1,6 +1,4 @@
-import { Clock } from "three";
-
-const clock = new Clock();
+import { Clock } from 'three';
 
 export class Loop {
   constructor(camera, scene, renderer) {
@@ -8,33 +6,54 @@ export class Loop {
     this.scene = scene;
     this.renderer = renderer;
     this.updatables = [];
-    this.onRender = null; //needed to avoid double-rendering and deals with world-specific logic
+    this.onRender = null;
+    this.clock = new Clock(false);
+    this.frameCount = 0;
+    this.isPaused = false;
   }
 
   start() {
+    let firstFrame = true;
+    
     this.renderer.setAnimationLoop(() => {
-      // start the animation loop
-
-      const delta = clock.getDelta(); // get time elapsed since last frame
+      if (this.isPaused) return;
       
-      this.tick(delta); //update animations
-
-      if (this.onRender) {
-        // call world-specific render logic -> since loop initialized in World, it is truthy
-        this.onRender(delta); //calls function World assigned (handleControls)
+      if (firstFrame) {
+        this.clock.start();
+        firstFrame = false;
+        return;
       }
-
-      // render a frame
+      
+      let delta = this.clock.getDelta();
+      
+      this.tick(delta);
+      if (this.onRender) {
+        this.onRender(delta);
+      }
       this.renderer.render(this.scene, this.camera);
     });
   }
+  
+  avg(arr) {
+    return arr.reduce((a, b) => a + b, 0) / arr.length;
+  }
+
+  pause() {
+    this.isPaused = true;
+    this.clock.stop();
+  }
+
+  resume() {
+    this.isPaused = false;
+    this.clock.start();
+  }
 
   stop() {
-    this.renderer.setAnimationLoop(null); // stop the animation loop
+    this.renderer.setAnimationLoop(null);
+    this.clock.stop();
   }
 
   tick(delta) {
-    // update all objects
     for (let object of this.updatables) {
       object.tick(delta);
     }

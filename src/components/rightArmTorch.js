@@ -50,8 +50,8 @@ export const rightArmTorch = () => {
   topTorchLight.name = "mainTorchLight";
   topTorchLight.position.set(0.7, 4, 0);
   topTorchLight.castShadow = true;
-  topTorchLight.shadow.mapSize.width = 1024;
-  topTorchLight.shadow.mapSize.height = 1024;
+  topTorchLight.shadow.mapSize.width = 512;
+  topTorchLight.shadow.mapSize.height = 512;
   topTorchLight.shadow.camera.near = 0.3;
   topTorchLight.shadow.camera.far = 15;
 

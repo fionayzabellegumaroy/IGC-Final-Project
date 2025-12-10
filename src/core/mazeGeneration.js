@@ -1,11 +1,11 @@
 import { MAZE_COLS, MAZE_ROWS } from "../utils";
 
-function generateMazePrims(width, height) {
-    let maze = Array(height).fill(null).map(() => Array(width).fill(1));
+function generateMazePrims() {
+    let maze = Array(MAZE_ROWS).fill(null).map(() => Array(MAZE_COLS).fill(1));
 
     //Prim's alg. for generation of corridors
-    let startX = Math.floor(Math.random() * Math.floor(width / 2)) * 2;
-    let startY = Math.floor(Math.random() * Math.floor(height / 2)) * 2;
+    let startX = Math.floor(Math.random() * Math.floor(MAZE_COLS / 2)) * 2;
+    let startY = Math.floor(Math.random() * Math.floor(MAZE_ROWS / 2)) * 2;
     maze[startY][startX] = 0; 
     
     let walls = [];
@@ -20,7 +20,7 @@ function generateMazePrims(width, height) {
         let newY = startY + dy;
 
         // bounds checking
-        if (newX >= 0 && newX < width && newY >= 0 && newY < height) {
+        if (newX >= 0 && newX < MAZE_COLS && newY >= 0 && newY < MAZE_ROWS) {
             walls.push([startX + dx/2, startY + dy/2, newX, newY]); // push wall 
 
         }
@@ -44,7 +44,7 @@ function generateMazePrims(width, height) {
                 // get neighboring cell coordinates
                 let newX = cellX + dx;
                 let newY = cellY + dy;
-                if (newX >= 0 && newX < width && newY >= 0 && newY < height && maze[newY][newX] === 1) {
+                if (newX >= 0 && newX < MAZE_COLS && newY >= 0 && newY < MAZE_ROWS && maze[newY][newX] === 1) {
                     // if bounds check passes, push wall
                     walls.push([cellX + dx/2, cellY + dy/2, newX, newY]);
                 }
@@ -53,12 +53,12 @@ function generateMazePrims(width, height) {
     }
 
     // add border walls 
-    let updatedMaze = new Array(height + 2); // +2 because of top of maze and bottom of maze
-    for (let i = 0; i < height + 2; i++){
-        updatedMaze[i] = new Array(width + 2); 
-        for (let j = 0; j < width + 2; j++){
+    let updatedMaze = new Array(MAZE_ROWS + 2); // +2 because of top of maze and bottom of maze
+    for (let i = 0; i < MAZE_ROWS + 2; i++){
+        updatedMaze[i] = new Array(MAZE_COLS + 2); 
+        for (let j = 0; j < MAZE_COLS + 2; j++){
             // if edge, it is a wall
-            if (i === 0 || i === height + 1 || j === 0 || j === width + 1){
+            if (i === 0 || i === MAZE_ROWS + 1 || j === 0 || j === MAZE_COLS + 1){
                 updatedMaze[i][j] = 1;  
             } else {
                 // if not an edge, translate maze info into updated maze
@@ -73,8 +73,8 @@ function generateMazePrims(width, height) {
     let openCells = [];
     
     // collect all open cells
-    for (let i = 1; i < height + 1; i++) {
-        for (let j = 1; j < width + 1; j++) {
+    for (let i = 1; i < MAZE_ROWS + 1; i++) {
+        for (let j = 1; j < MAZE_COLS + 1; j++) {
             if (updatedMaze[i][j] === 0) {
                 openCells.push([i, j]);
             }
@@ -104,14 +104,19 @@ function generateMazePrims(width, height) {
 }
 
 // helper function
-function printMaze(maze) {
-    return maze.map(row => row.join('')).join('\n');
+function printMaze(mazeArg) {
+    const mazeToUse = mazeArg || maze;
+    if (!mazeToUse) {
+        console.warn('printMaze: no maze available');
+        return '';
+    }
+    return mazeToUse.map(row => row.join('')).join('\n');
 }
 
 export let maze, startPosition, endPosition;
 
-function initMaze(width = MAZE_ROWS, height = MAZE_COLS) {
-    const result = generateMazePrims(width, height);
+function initMaze() {   
+    const result = generateMazePrims();
     maze = result.maze;
     startPosition = result.startPosition;
     endPosition = result.endPosition;
@@ -121,4 +126,4 @@ function initMaze(width = MAZE_ROWS, height = MAZE_COLS) {
 // initialize with defaults
 initMaze();
 
-export { initMaze as regenerateMaze };
+export { initMaze as regenerateMaze, printMaze };

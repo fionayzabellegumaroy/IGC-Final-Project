@@ -10,6 +10,5 @@ export * from './Result.jsx';
 export * from './rightArmTorch.js';
 export * from './scene.js';
 export * from './timer.jsx';
-export * from './torch.js';
 export * from './wall.js';
 export * from './World.jsx';

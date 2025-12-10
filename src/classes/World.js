@@ -159,10 +159,8 @@ export class World {
     for (let i = 0; i < maze.length; i++) {
       for (let j = 0; j < maze[i].length; j++) {
         if (maze[i][j] === 1) {
-          let wall = createWall(i, j, CELL_SIZE / 2);
-          this.scene.add(wall);
-          let secondWall = createWall(i, j, CELL_SIZE * 1.5);
-          this.scene.add(secondWall);
+          this.scene.add(createWall(i, j, CELL_SIZE / 2));
+          this.scene.add(createWall(i, j, CELL_SIZE * 1.5));
           continue;
         }
         this.scene.add(ground(i, j));

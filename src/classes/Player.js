@@ -1,26 +1,16 @@
-import {
-  Vector3,
-} from "three";
-
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { checkCollision, maze } from "../core";
+import { Vector3 } from "three";
 
 export class Player {
-  constructor(scene, controls, camera, keys, collisionEnabledFn = () => true) {
+  constructor(scene, controls, camera, keys) {
     this.scene = scene;
     this.controls = controls;
-    this.loader = new GLTFLoader();
-    this.model = null;
-    this.modelContainer = null;
     this.camera = camera;
     this.keys = keys;
     this.moveSpeed = 20.0;
-    this.collisionEnabledFn = collisionEnabledFn;
-    this.position = this.camera.position || new Vector3();
-    this.rotation = new Vector3();
     this.headBobTimer = 0;
     this.baseYPosition = this.camera.position.y;
-    this.isMoving = false; 
+    this.isMoving = false;
   }
 
   update(delta) {
@@ -69,7 +59,7 @@ export class Player {
         this.camera.position.y -= currentOffset * 0.1;
       } else {
         this.camera.position.y = this.baseYPosition;
-        this.headBobTimer = 0; 
+        this.headBobTimer = 0;
       }
     }
   }

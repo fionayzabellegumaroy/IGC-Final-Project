@@ -1,5 +1,5 @@
-import { Button, Grid } from "@mui/material";
-import { TIME_LIMIT } from "../utils";
+import { TIME_LIMIT } from "../config";
+import { Grid } from "@mui/material";
 
 export const Result = ({ onClose, sad, timeElapsed, win }) => {
   let time = Math.max(0, TIME_LIMIT - Math.floor(timeElapsed));
@@ -37,9 +37,6 @@ export const Result = ({ onClose, sad, timeElapsed, win }) => {
     >
       <Grid
         sx={{
-          //   backgroundColor: "#efd6ac",
-          //   border: "1px black solid",
-          //   borderRadius: "5px",
           color: "#efd6ac",
           fontSize: "18px",
           fontWeight: "bold",
@@ -47,7 +44,7 @@ export const Result = ({ onClose, sad, timeElapsed, win }) => {
           width: "100%",
         }}
       >
-        <p style={{margin: 0}}>{resultStatement}</p>
+        <p style={{ margin: 0 }}>{resultStatement}</p>
       </Grid>
       <Grid
         onClick={() => onClose()}
@@ -62,7 +59,7 @@ export const Result = ({ onClose, sad, timeElapsed, win }) => {
           width: "100%",
         }}
       >
-        <p style={{margin: 0}}>{closingStatement}</p>
+        <p style={{ margin: 0 }}>{closingStatement}</p>
       </Grid>
     </Grid>
   );

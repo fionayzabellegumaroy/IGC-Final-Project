@@ -1,4 +1,3 @@
-export * from './ambientLight.js';
 export * from './camera.js';
 export * from './ceiling.js';
 export * from './endBlock.js';

@@ -1,3 +1,4 @@
+import { topTorch } from "../assets/textures";
 import {
   BoxGeometry,
   CylinderGeometry,
@@ -8,8 +9,6 @@ import {
   PointLight,
   TextureLoader,
 } from "three";
-
-import { topTorch } from "../assets/textures";
 
 export const rightArmTorch = () => {
   let model = new Group();
@@ -62,7 +61,7 @@ export const rightArmTorch = () => {
   let leftTorchLight = new PointLight(0xf8e17a, 5.0, 50, 1);
   leftTorchLight.position.set(-1.7, 2.5, 0);
   leftTorchLight.castShadow = true;
-  
+
   let torchLight = new Group();
 
   torchLight.add(topTorchLight);

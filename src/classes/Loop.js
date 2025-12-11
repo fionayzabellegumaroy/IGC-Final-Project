@@ -1,4 +1,4 @@
-import { Clock } from 'three';
+import { Clock } from "three";
 
 export class Loop {
   constructor(camera, scene, renderer) {
@@ -14,28 +14,24 @@ export class Loop {
 
   start() {
     let firstFrame = true;
-    
+
     this.renderer.setAnimationLoop(() => {
       if (this.isPaused) return;
-      
+
       if (firstFrame) {
         this.clock.start();
         firstFrame = false;
         return;
       }
-      
+
       let delta = this.clock.getDelta();
-      
+
       this.tick(delta);
       if (this.onRender) {
         this.onRender(delta);
       }
       this.renderer.render(this.scene, this.camera);
     });
-  }
-  
-  avg(arr) {
-    return arr.reduce((a, b) => a + b, 0) / arr.length;
   }
 
   pause() {

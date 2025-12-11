@@ -1,7 +1,11 @@
-import { CELL_SIZE } from '../utils';
+import { CELL_SIZE } from "../config";
 
-export function checkCollision(currentPosition, movementVector, maze, padding = 10.6) {
-
+export function checkCollision(
+  currentPosition,
+  movementVector,
+  maze,
+  padding = 10.6
+) {
   // compute next position
   const nextX = currentPosition.x + movementVector.x;
   const nextZ = currentPosition.z + movementVector.z;

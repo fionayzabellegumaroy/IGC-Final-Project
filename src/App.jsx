@@ -1,11 +1,9 @@
-// dont forget, since i am doing animations, might need to get clock delta in app and then pass?
-
+import "./App.css";
+import { audio as audioSrc, screen, yes } from "./assets";
 import { ThreeJsWorld as World } from "./components";
+import { regenerateMaze } from "./core";
 import { Grid } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
-import { audio as audioSrc, screen, screenFirst, yes } from "./assets";
-import { regenerateMaze } from "./core/mazeGeneration.js";
-import "./App.css";
 
 function App() {
   const [start, setStart] = useState(0);
@@ -36,7 +34,7 @@ function App() {
         height: "100vh",
         justifyItems: "center",
         left: 0,
-        overflow: "hidden", //still somehow shows scrollbars without this
+        overflow: "hidden", 
         position: "absolute",
         top: 0,
         width: "100vw",
@@ -52,7 +50,9 @@ function App() {
           }}
         >
           <World
-            onExit={() => { setStart(0); }}
+            onExit={() => {
+              setStart(0);
+            }}
           />
         </Grid>
       ) : null}
@@ -64,45 +64,45 @@ function App() {
           alignItems="center"
           justifyContent="center"
         >
-            <img
-              id="screen-first-img"
-              src={screen}
-              style={{
-                left: "50%",
-                position: "fixed",
-                top: "50%",
-                transform: "translate(-50%, -50%)"
-              }}
-            />
-            <img
-              id="yes-img"
-              onClick={() => {
-                if (bgAudioRef.current) {
-                  bgAudioRef.current.play().catch((e) => {
-                    console.error("Audio play failed:", e);
-                  });
-                }
-                regenerateMaze();
-                setStart(1);
-                if (isFirst) {
-                  setIsFirst(false);
-                }
-              }}
-              src={yes}
-              style={{
-                cursor: "pointer",
-                flexShrink: 0,
-                height: "60px",
-                left: "50%",
-                margin: 0,
-                padding: 0,
-                position: "fixed",
-                top: "50%",
-                transform: "translate(-50%, 50%) scale(1)", // remove if not using
-                width: "60px",
-                zIndex: 100,
-              }}
-            />
+          <img
+            id="screen-first-img"
+            src={screen}
+            style={{
+              left: "50%",
+              position: "fixed",
+              top: "50%",
+              transform: "translate(-50%, -50%)",
+            }}
+          />
+          <img
+            id="yes-img"
+            onClick={() => {
+              if (bgAudioRef.current) {
+                bgAudioRef.current.play().catch((e) => {
+                  console.error("Audio play failed:", e);
+                });
+              }
+              regenerateMaze();
+              setStart(1);
+              if (isFirst) {
+                setIsFirst(false);
+              }
+            }}
+            src={yes}
+            style={{
+              cursor: "pointer",
+              flexShrink: 0,
+              height: "60px",
+              left: "50%",
+              margin: 0,
+              padding: 0,
+              position: "fixed",
+              top: "50%",
+              transform: "translate(-50%, 50%)",
+              width: "60px",
+              zIndex: 100,
+            }}
+          />
         </Grid>
       )}
     </Grid>

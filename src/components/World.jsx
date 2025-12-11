@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Grid } from "@mui/material";
 import { World } from "../classes/";
-import { regenerateMaze } from "../core/mazeGeneration.js";
+import { regenerateMaze } from "../core";
+import { Grid } from "@mui/material";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export let ThreeJsWorld = ({ onExit } = {}) => {
   let containerRef = useRef(null); // holds the DOM node where we mount the canvas
@@ -29,7 +29,6 @@ export let ThreeJsWorld = ({ onExit } = {}) => {
     } catch (e) {
       console.error("Error regenerating maze:", e);
     }
-    // change numbers here if we want different maze sizes
 
     // initialize world and pass the onExit callback into the World instance
     worldRef.current = new World(containerRef.current, { onExit: handleExit });

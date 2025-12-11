@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { Grid } from '@mui/material';
-import { TIME_LIMIT } from '../utils';
+import { TIME_LIMIT } from "../config";
+import { Grid } from "@mui/material";
+import { useEffect, useState } from "react";
 
 export const Timer = ({ timeStarted }) => {
   const timeTotal = TIME_LIMIT; // seconds
@@ -15,8 +15,8 @@ export const Timer = ({ timeStarted }) => {
     const update = () => {
       const now = Date.now();
       setTimeElapsed(Math.max(0, Math.floor((now - timeStarted) / 1000))); // dividing by 1000 converts milliseconds to seconds
-        // Math.floor so it only counts for whole seconds
-        // Math.max to avoid negative time if timeStarted is in the future
+      // Math.floor so it only counts for whole seconds
+      // Math.max to avoid negative time if timeStarted is in the future
     };
 
     update(); // initial call to set immediately
@@ -26,12 +26,30 @@ export const Timer = ({ timeStarted }) => {
 
   const timeLeft = Math.max(0, timeTotal - timeElapsed);
 
-  const minutes = String(Math.floor(timeLeft / 60)).padStart(2, '0');
-  const seconds = String(timeLeft % 60).padStart(2, '0');
+  const minutes = String(Math.floor(timeLeft / 60)).padStart(2, "0");
+  const seconds = String(timeLeft % 60).padStart(2, "0");
 
   return (
-    <Grid sx={{ position: 'absolute', top: 20, left: 20, color: 'white', fontSize: '24px', zIndex: 1000 }}>
-      <p style={{ margin: 0, color: '#efd6ac',padding: 0, textDecoration: 'none'}}>{minutes}:{seconds}</p>
+    <Grid
+      sx={{
+        position: "absolute",
+        top: 20,
+        left: 20,
+        color: "white",
+        fontSize: "24px",
+        zIndex: 1000,
+      }}
+    >
+      <p
+        style={{
+          margin: 0,
+          color: "#efd6ac",
+          padding: 0,
+          textDecoration: "none",
+        }}
+      >
+        {minutes}:{seconds}
+      </p>
     </Grid>
   );
 };

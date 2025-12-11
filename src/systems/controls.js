@@ -1,14 +1,19 @@
 // using PointerLockControls for first-person controls
-import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls.js';
+import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js";
 
-export function setupControls(camera, domElement, onObjectClick = null, getPopupState = null) {
+export function setupControls(
+  camera,
+  domElement,
+  onObjectClick = null,
+  getPopupState = null
+) {
   const controls = new PointerLockControls(camera, domElement);
   const keys = { w: false, a: false, s: false, d: false };
 
-  // Limit vertical look angle to fix rotation issues
-  controls.maxPolarAngle = Math.PI / 2 + 1.25; 
+  // limit vertical look angle to fix rotation issues
+  controls.maxPolarAngle = Math.PI / 2 + 1.25;
   controls.minPolarAngle = Math.PI / 2 - 1.0;
-  
+
   const onKeyDown = (e) => {
     // don't register movement keys if popup is open
     if (getPopupState && getPopupState()) return;
@@ -23,10 +28,11 @@ export function setupControls(camera, domElement, onObjectClick = null, getPopup
 
   const onClick = (event) => {
     const isPopupOpen = getPopupState ? getPopupState() : false;
-    if (isPopupOpen) { // popup, so don't do anything
+    if (isPopupOpen) {
+      // popup, so don't do anything
       return;
     }
-    
+
     if (document.pointerLockElement) {
       // in pointer lock, handle object clicking
       if (onObjectClick) {
@@ -39,18 +45,17 @@ export function setupControls(camera, domElement, onObjectClick = null, getPopup
   };
 
   // attach listeners
-  document.addEventListener('keydown', onKeyDown);
-  document.addEventListener('keyup', onKeyUp);
-  domElement.addEventListener('click', onClick);
+  document.addEventListener("keydown", onKeyDown);
+  document.addEventListener("keyup", onKeyUp);
+  domElement.addEventListener("click", onClick);
 
   function dispose() {
-    document.removeEventListener('keydown', onKeyDown);
-    document.removeEventListener('keyup', onKeyUp);
-    domElement.removeEventListener('click', onClick);
+    document.removeEventListener("keydown", onKeyDown);
+    document.removeEventListener("keyup", onKeyUp);
+    domElement.removeEventListener("click", onClick);
     try {
       controls.unlock();
-    } catch (err) {
-    }
+    } catch (err) {}
   }
 
   return { controls, keys, dispose };

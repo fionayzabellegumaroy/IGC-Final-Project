@@ -1,6 +1,6 @@
+import { CELL_SIZE } from "../config";
 import { BoxGeometry, Mesh } from "three";
 import { createMaterialForType } from "../utils";
-import { CELL_SIZE } from "../utils";
 
 const geometry = new BoxGeometry(CELL_SIZE, CELL_SIZE, CELL_SIZE);
 const material = createMaterialForType("wall");

@@ -1,6 +1,6 @@
-import { PerspectiveCamera } from "three";
+import { CELL_SIZE, EYE_HEIGHT } from "../config";
 import { startPosition } from "../core";
-import { CELL_SIZE, EYE_HEIGHT } from "../utils";
+import { PerspectiveCamera } from "three";
 
 export const camera = () => {
   let camera = new PerspectiveCamera(65, 0.9, 0.1, 1000);

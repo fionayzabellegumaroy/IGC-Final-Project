@@ -1,5 +1,6 @@
+import { CELL_SIZE } from "../config";
 import { BoxGeometry, Mesh } from "three";
-import { CELL_SIZE, createMaterialForType } from "../utils";
+import { createMaterialForType } from "../utils";
 
 let groundGeometry = new BoxGeometry(CELL_SIZE, 0.1, CELL_SIZE);
 let groundMaterial = createMaterialForType("ground");

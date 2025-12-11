@@ -32,23 +32,5 @@ export const BLOCK_TYPES = {
     bottom: [1, 0],
     front: [1, 0],
     back: [1, 0]
-  },
-
-  // startBlock: {
-  //   right: [0, 0],
-  //   left: [0, 0],
-  //   top: [0, 0],
-  //   bottom: [0, 0],
-  //   front: [0, 0],
-  //   back: [0, 0]
-  // },
-
-  // endBlock: {
-  //   right: [0, 0],
-  //   left: [0, 0], 
-  //   top: [0, 0],
-  //   bottom: [0, 0],
-  //   front: [0, 0],
-  //   back: [0, 0]
-  // }
+  }
 };

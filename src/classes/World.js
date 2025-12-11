@@ -1,6 +1,5 @@
-import { Color, Raycaster, Vector2, Vector3 } from "three";
+import { Loop, Player } from "./";
 import {
-  ambientLight,
   camera,
   ceiling,
   createWall,
@@ -14,12 +13,13 @@ import {
   Result,
   scene,
 } from "../components";
+import { CELL_SIZE, TIME_LIMIT } from "../config";
 import { maze } from "../core";
-import { CELL_SIZE, GeometryMerger, TIME_LIMIT } from "../utils";
-import { Loop, renderer, Resizer, setupControls } from "../systems";
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { Player } from "./";
+import { renderer, Resizer, setupControls } from "../systems";
+import { Color, Raycaster, Vector2, Vector3 } from "three";
+import { GeometryMerger } from "../utils";
 
 export class World {
   constructor(container, options = {}) {
@@ -30,7 +30,6 @@ export class World {
     this.isPopupOpen = false;
     this.raycaster = new Raycaster();
     this.mouse = new Vector2();
-    this.ambientLight = ambientLight();
     this.timeElapsed = 0;
     this.timeTotal = TIME_LIMIT; // in seconds
     this.timeStarted = -1;
@@ -47,13 +46,7 @@ export class World {
     this.controls = controls;
     this.keys = keys;
 
-    this.player = new Player(
-      this.scene,
-      this.controls,
-      this.camera,
-      this.keys,
-      () => !this.isPopupOpen
-    );
+    this.player = new Player(this.scene, this.controls, this.camera, this.keys);
 
     this.controlsDispose = dispose;
 
@@ -119,13 +112,7 @@ export class World {
       this.updateArmPosition()
     );
 
-    this.scene.add(
-      this.ambientLight,
-      this.camera,
-      ceiling(),
-      endBlock(),
-      this.playerModel
-    );
+    this.scene.add(this.camera, ceiling(), endBlock(), this.playerModel);
 
     // loop manager if needed elsewhere
     this.loop = new Loop(this.camera, this.scene, this.renderer);
@@ -183,7 +170,7 @@ export class World {
         if (this.loop) {
           this.loop.resume();
         }
-        this.updateTime = true; 
+        this.updateTime = true;
         this.timeStarted = Date.now() - this.timeElapsed * 1000;
       }
     };
@@ -214,7 +201,7 @@ export class World {
     for (let i = 0; i < maze.length; i++) {
       for (let j = 0; j < maze[i].length; j++) {
         if (maze[i][j] === 1) {
-          wallCount += 2; 
+          wallCount += 2;
         } else {
           groundCount += 1;
         }
@@ -222,11 +209,7 @@ export class World {
     }
 
     GeometryMerger.mergeMeshes(this.scene, {
-      excludeObjects: [
-        this.playerModel,
-        this.armTorchModel,
-        this.camera
-      ],
+      excludeObjects: [this.playerModel, this.armTorchModel, this.camera],
       excludeTypes: ["endBlock"],
     });
   }
@@ -500,16 +483,12 @@ export class World {
     try {
       if (this.armTorchModel && this.camera)
         this.camera.remove(this.armTorchModel);
-      if (this.ambientLight && this.scene) this.scene.remove(this.ambientLight);
       if (this.camera && this.scene) this.scene.remove(this.camera);
       if (this.ceilingObj) this.scene.remove(this.ceilingObj);
       if (this.endBlockObj) this.scene.remove(this.endBlockObj);
       if (this.playerModel) this.scene.remove(this.playerModel);
       if (this.tabChange) {
-        document.removeEventListener(
-          "tabChange",
-          this.tabChange
-        );
+        document.removeEventListener("tabChange", this.tabChange);
         this.tabChange = null;
       }
       if (Array.isArray(this.walls)) {
@@ -575,7 +554,6 @@ export class World {
     this.camera = null;
     this.renderer = null;
     this.player = null;
-    this.ambientLight = null;
     this.armTorchModel = null;
     this.timerRoot = null;
     this.timerMountDiv = null;

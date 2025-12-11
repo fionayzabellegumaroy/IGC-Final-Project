@@ -6,24 +6,24 @@ export class Resizer {
     this.onResize = onResize;
 
     this.setSize();
-    window.addEventListener('resize', () => this.setSize());
+    window.addEventListener("resize", () => this.setSize());
   }
 
   setSize() {
     const width = this.container.clientWidth;
     const height = this.container.clientHeight;
-    
+
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(width, height);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  
+
     if (this.onResize) {
       this.onResize(width, height);
     }
   }
 
   dispose() {
-    window.removeEventListener('resize', () => this.setSize());
+    window.removeEventListener("resize", () => this.setSize());
   }
 }

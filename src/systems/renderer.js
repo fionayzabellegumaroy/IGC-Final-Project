@@ -7,4 +7,4 @@ export const renderer = () => {
   renderer.physicallyCorrectLights = true;
 
   return renderer;
-}
+};

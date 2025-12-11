@@ -1,6 +1,7 @@
 import "./App.css";
 import { audio as audioSrc, screen, yes } from "./assets";
 import { ThreeJsWorld as World } from "./components";
+import { MAZE_ROWS, MAZE_COLS } from "./config";
 import { regenerateMaze } from "./core";
 import { Grid } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
@@ -82,7 +83,7 @@ function App() {
                   console.error("Audio play failed:", e);
                 });
               }
-              regenerateMaze();
+              regenerateMaze(MAZE_COLS, MAZE_ROWS);
               setStart(1);
             }}
             src={yes}

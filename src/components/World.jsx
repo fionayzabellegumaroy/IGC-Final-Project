@@ -1,5 +1,4 @@
 import { World } from "../classes/";
-import { regenerateMaze } from "../core";
 import { Grid } from "@mui/material";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -22,13 +21,6 @@ export let ThreeJsWorld = ({ onExit } = {}) => {
 
   useEffect(() => {
     if (!containerRef.current) return;
-
-    // regenerate maze so each world instance starts with a fresh maze
-    try {
-      regenerateMaze(5, 5);
-    } catch (e) {
-      console.error("Error regenerating maze:", e);
-    }
 
     // initialize world and pass the onExit callback into the World instance
     worldRef.current = new World(containerRef.current, { onExit: handleExit });

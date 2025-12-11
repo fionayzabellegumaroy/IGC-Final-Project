@@ -7,7 +7,6 @@ import { useEffect, useRef, useState } from "react";
 
 function App() {
   const [start, setStart] = useState(0);
-  const [isFirst, setIsFirst] = useState(true);
   const bgAudioRef = useRef(null);
 
   useEffect(() => {
@@ -68,6 +67,7 @@ function App() {
             id="screen-first-img"
             src={screen}
             style={{
+              height: "100%",
               left: "50%",
               position: "fixed",
               top: "50%",
@@ -84,9 +84,6 @@ function App() {
               }
               regenerateMaze();
               setStart(1);
-              if (isFirst) {
-                setIsFirst(false);
-              }
             }}
             src={yes}
             style={{

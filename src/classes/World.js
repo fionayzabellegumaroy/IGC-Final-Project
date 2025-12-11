@@ -279,8 +279,6 @@ export class World {
     if (intersects.length > 0) {
       const clickedObject = intersects[0].object;
 
-      console.log("Clicked object:", clickedObject);
-
       // check what type of object was clicked
       if (
         clickedObject.userData &&
